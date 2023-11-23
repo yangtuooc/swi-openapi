@@ -17,7 +17,17 @@ intellij {
     version.set("2023.2.2")
     type.set("GO") // Target IDE Platform
 
-    plugins.set(listOf(/* Plugin Dependencies */))
+    plugins.set(
+        listOf(/* Plugin Dependencies */
+            "org.jetbrains.plugins.go:232.9921.28"
+        )
+    )
+}
+
+dependencies {
+    implementation("com.fasterxml.jackson.core:jackson-core:2.13.0")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.13.0")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.13.0")
 }
 
 tasks {
