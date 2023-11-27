@@ -9,8 +9,6 @@ import com.intellij.openapi.ui.Messages
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.table.JBTable
-import java.awt.Dimension
-import java.awt.FlowLayout
 import javax.swing.*
 import javax.swing.table.DefaultTableModel
 
@@ -21,19 +19,20 @@ class SwiApiDocDialog(private val elt: GoReferenceExpression) : DialogWrapper(el
 
     init {
         init() // 初始化对话框
-        title = "API Documentation" // 设置对话框的标题
+        title = "API Documentation Preview" // 设置对话框的标题
     }
 
     override fun createCenterPanel(): JComponent {
         val panel = createPanel()
 
-        panel.add(apiPanel())
+        panel.add(SwiApiPanel(findPath(elt)))
 
-        panel.add(requestTypePanel())
+        panel.add(SwiHttpRequestTypePanel(elt.identifier.text))
         panel.add(JSeparator())
 
-        panel.add(requestTitlePanel())
-        panel.add(requestPanel())
+        val requestPanel = SwiRequestPanel(generateModelData())
+        panel.add(requestPanel.title())
+        panel.add(requestPanel.table())
 
         // 导出选项
         val exportPanel = JPanel()
@@ -61,25 +60,6 @@ class SwiApiDocDialog(private val elt: GoReferenceExpression) : DialogWrapper(el
         )
     }
 
-    private fun requestTypePanel(): JPanel {
-        val requestTypePanel = JPanel(FlowLayout(FlowLayout.LEFT))
-        requestTypePanel.add(JLabel("请求类型:"))
-        val box = JComboBox<String>().apply {
-            addItem("GET")
-            addItem("POST")
-            addItem("PUT")
-            addItem("DELETE")
-        }
-        box.selectedItem = elt.identifier.text
-        requestTypePanel.add(box)
-        return requestTypePanel
-    }
-
-    private fun requestTitlePanel(): JPanel {
-        val titlePanel = JPanel(FlowLayout(FlowLayout.LEFT))
-        titlePanel.add(JLabel("请求体:"))
-        return titlePanel
-    }
 
     private fun requestPanel(): JBScrollPane {
         val columnNames = arrayOf("字段", "类型", "标题", "描述")
@@ -91,15 +71,6 @@ class SwiApiDocDialog(private val elt: GoReferenceExpression) : DialogWrapper(el
         return JBScrollPane(table)
     }
 
-    private fun apiPanel(): JPanel {
-        val apiPanel = JPanel(FlowLayout(FlowLayout.LEFT))
-        apiPanel.add(JLabel("接口路径:"))
-        apiPanel.add(apiField.apply {
-            text = findPath(elt)
-            preferredSize = Dimension(300, preferredSize.height)
-        })
-        return apiPanel
-    }
 
     private fun createPanel(): JPanel {
         val panel = JPanel().apply {
