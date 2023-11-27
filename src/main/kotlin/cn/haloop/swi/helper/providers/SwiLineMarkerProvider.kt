@@ -1,6 +1,7 @@
 package cn.haloop.swi.helper.providers
 
 import cn.haloop.swi.helper.icons.ApiIcon
+import cn.haloop.swi.helper.nav.SwiNavigationHandler
 import com.goide.psi.GoCallExpr
 import com.goide.psi.GoReferenceExpression
 import com.intellij.codeInsight.daemon.LineMarkerInfo
@@ -22,8 +23,10 @@ class SwiLineMarkerProvider : LineMarkerProvider {
                     element.textRange,
                     ApiIcon.API_ICON,
                     { "Api Document" },
-                    null,
-                    GutterIconRenderer.Alignment.CENTER,
+                    { e, elt ->
+                        SwiNavigationHandler().navigate(e, elt as GoReferenceExpression)
+                    },
+                    GutterIconRenderer.Alignment.LEFT,
                     { "Api Document" }
                 )
             }
