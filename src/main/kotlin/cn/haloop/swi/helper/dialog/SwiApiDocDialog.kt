@@ -13,7 +13,6 @@ import javax.swing.*
 import javax.swing.table.DefaultTableModel
 
 class SwiApiDocDialog(private val elt: GoReferenceExpression) : DialogWrapper(elt.project) {
-    private val apiField = JTextField()
     private val tableModel = DefaultTableModel()
     private val exportOptions = listOf("ApiFox", "OpenAPI", "Swagger")
 
