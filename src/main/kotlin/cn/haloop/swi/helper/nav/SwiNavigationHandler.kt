@@ -14,7 +14,7 @@ class SwiNavigationHandler : GutterIconNavigationHandler<GoReferenceExpression> 
             return
         }
         val project = elt.project
-        val dialog = SwiApiDocDialog(project)
+        val dialog = SwiApiDocDialog(elt)
         dialog.show()
     }
 }

@@ -3,8 +3,10 @@ package cn.haloop.swi.helper.dialog
 /**
  * @author yangtuo
  */
-import com.intellij.openapi.project.Project
+import com.goide.psi.*
 import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.openapi.ui.Messages
+import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.table.JBTable
 import java.awt.Dimension
@@ -12,7 +14,7 @@ import java.awt.FlowLayout
 import javax.swing.*
 import javax.swing.table.DefaultTableModel
 
-class SwiApiDocDialog(project: Project) : DialogWrapper(project) {
+class SwiApiDocDialog(private val elt: GoReferenceExpression) : DialogWrapper(elt.project) {
     private val apiField = JTextField()
     private val tableModel = DefaultTableModel()
     private val exportOptions = listOf("ApiFox", "OpenAPI", "Swagger")
@@ -30,6 +32,7 @@ class SwiApiDocDialog(project: Project) : DialogWrapper(project) {
         panel.add(requestTypePanel())
         panel.add(JSeparator())
 
+        panel.add(requestTitlePanel())
         panel.add(requestPanel())
 
         // 导出选项
@@ -47,7 +50,7 @@ class SwiApiDocDialog(project: Project) : DialogWrapper(project) {
 
     private fun exportAction(option: String) {
         // 处理不同的导出逻辑
-        println("Exporting as $option")
+        Messages.showInfoMessage("导出选项：$option", "导出")
     }
 
     private fun generateModelData(): Array<Array<Any>> {
@@ -70,11 +73,13 @@ class SwiApiDocDialog(project: Project) : DialogWrapper(project) {
         return requestTypePanel
     }
 
-    private fun requestPanel(): JBScrollPane {
+    private fun requestTitlePanel(): JPanel {
         val titlePanel = JPanel(FlowLayout(FlowLayout.LEFT))
         titlePanel.add(JLabel("请求体:"))
-        panel.add(titlePanel)
+        return titlePanel
+    }
 
+    private fun requestPanel(): JBScrollPane {
         val columnNames = arrayOf("字段", "类型", "标题", "描述")
         tableModel.setColumnIdentifiers(columnNames)
         // 假设有函数 generateModelData() 来填充表格数据
@@ -88,7 +93,7 @@ class SwiApiDocDialog(project: Project) : DialogWrapper(project) {
         val apiPanel = JPanel(FlowLayout(FlowLayout.LEFT))
         apiPanel.add(JLabel("接口路径:"))
         apiPanel.add(apiField.apply {
-            text = "/api/agents/{id}"
+            text = findPath(elt)
             preferredSize = Dimension(300, preferredSize.height)
         })
         return apiPanel
@@ -101,4 +106,31 @@ class SwiApiDocDialog(project: Project) : DialogWrapper(project) {
         panel.layout = BoxLayout(panel, BoxLayout.Y_AXIS)
         return panel
     }
+
+    private fun findPath(element: GoReferenceExpression): String? {
+        val variableName = element.text
+        val file = element.containingFile as GoFile
+        val basePath = findBasePathInFile(file, variableName)
+
+        val subPath = element.parent?.let {
+            PsiTreeUtil.findChildOfType(it, GoArgumentList::class.java)
+                ?.expressionList?.firstOrNull()?.text?.trim('"')
+        }
+
+        return if (basePath.isNullOrEmpty()) subPath else "$basePath$subPath"
+    }
+
+    private fun findBasePathInFile(file: GoFile, variableName: String): String? {
+        val varDefinitions = PsiTreeUtil.findChildrenOfType(file, GoVarDefinition::class.java)
+        for (varDef in varDefinitions) {
+            if (variableName.contains(varDef.text)) {
+                val callExpr = PsiTreeUtil.findChildOfType(varDef.parent, GoCallExpr::class.java)
+                if (callExpr?.text?.contains(".Group") == true) {
+                    return callExpr.argumentList.expressionList.firstOrNull()?.text?.trim('"')
+                }
+            }
+        }
+        return null
+    }
+
 }
