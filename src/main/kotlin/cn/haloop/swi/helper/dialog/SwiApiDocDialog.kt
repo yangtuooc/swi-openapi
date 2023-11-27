@@ -33,6 +33,10 @@ class SwiApiDocDialog(private val elt: GoReferenceExpression) : DialogWrapper(el
         panel.add(requestPanel.title())
         panel.add(requestPanel.table())
 
+        val responsePanel = SwiResponsePanel(generateModelData())
+        panel.add(responsePanel.title())
+        panel.add(responsePanel.table())
+
         // 导出选项
         val exportPanel = JPanel()
         exportOptions.forEach { option ->
