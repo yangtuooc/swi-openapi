@@ -64,12 +64,14 @@ class SwiApiDocDialog(private val elt: GoReferenceExpression) : DialogWrapper(el
     private fun requestTypePanel(): JPanel {
         val requestTypePanel = JPanel(FlowLayout(FlowLayout.LEFT))
         requestTypePanel.add(JLabel("请求类型:"))
-        requestTypePanel.add(JComboBox<String>().apply {
+        val box = JComboBox<String>().apply {
             addItem("GET")
             addItem("POST")
             addItem("PUT")
             addItem("DELETE")
-        })
+        }
+        box.selectedItem = elt.identifier.text
+        requestTypePanel.add(box)
         return requestTypePanel
     }
 
