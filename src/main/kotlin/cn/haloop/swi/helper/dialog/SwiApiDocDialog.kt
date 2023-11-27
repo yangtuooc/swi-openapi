@@ -6,6 +6,9 @@ package cn.haloop.swi.helper.dialog
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.components.JBScrollPane
+import com.intellij.ui.table.JBTable
+import java.awt.Dimension
+import java.awt.FlowLayout
 import javax.swing.*
 import javax.swing.table.DefaultTableModel
 
@@ -19,38 +22,15 @@ class SwiApiDocDialog(project: Project) : DialogWrapper(project) {
         title = "API Documentation" // 设置对话框的标题
     }
 
-    override fun createCenterPanel(): JComponent? {
-        val panel = JPanel()
-        panel.layout = BoxLayout(panel, BoxLayout.Y_AXIS)
+    override fun createCenterPanel(): JComponent {
+        val panel = createPanel()
 
-        // API路由
-        val apiPanel = JPanel()
-        apiPanel.add(JLabel("接口路径:"))
-        apiPanel.add(apiField.apply {
-            text = "/api/agents/{id}"
-        })
-        panel.add(apiPanel, BoxLayout.X_AXIS)
+        panel.add(apiPanel())
 
-        // 请求类型
-        val requestTypePanel = JPanel()
-        requestTypePanel.add(JLabel("请求类型:"))
-        requestTypePanel.add(JComboBox<String>().apply {
-            addItem("GET")
-            addItem("POST")
-            addItem("PUT")
-            addItem("DELETE")
-        })
+        panel.add(requestTypePanel())
+        panel.add(JSeparator())
 
-        panel.add(requestTypePanel, BoxLayout.X_AXIS)
-
-        // 模型字段
-        val columnNames = arrayOf("Field", "Type", "Description")
-        tableModel.setColumnIdentifiers(columnNames)
-        // 假设有函数 generateModelData() 来填充表格数据
-        val data = generateModelData()
-        data.forEach { tableModel.addRow(it) }
-        val table = JTable(tableModel)
-        panel.add(JBScrollPane(table))
+        panel.add(requestPanel())
 
         // 导出选项
         val exportPanel = JPanel()
@@ -60,6 +40,7 @@ class SwiApiDocDialog(project: Project) : DialogWrapper(project) {
             })
         }
         panel.add(exportPanel)
+        panel.add(JSeparator())
 
         return panel
     }
@@ -75,5 +56,49 @@ class SwiApiDocDialog(project: Project) : DialogWrapper(project) {
             arrayOf("name", "string", "name of agent"),
             arrayOf("gender", "enum", "gender")
         )
+    }
+
+    private fun requestTypePanel(): JPanel {
+        val requestTypePanel = JPanel(FlowLayout(FlowLayout.LEFT))
+        requestTypePanel.add(JLabel("请求类型:"))
+        requestTypePanel.add(JComboBox<String>().apply {
+            addItem("GET")
+            addItem("POST")
+            addItem("PUT")
+            addItem("DELETE")
+        })
+        return requestTypePanel
+    }
+
+    private fun requestPanel(): JBScrollPane {
+        val titlePanel = JPanel(FlowLayout(FlowLayout.LEFT))
+        titlePanel.add(JLabel("请求体:"))
+        panel.add(titlePanel)
+
+        val columnNames = arrayOf("字段", "类型", "标题", "描述")
+        tableModel.setColumnIdentifiers(columnNames)
+        // 假设有函数 generateModelData() 来填充表格数据
+        val data = generateModelData()
+        data.forEach { tableModel.addRow(it) }
+        val table = JBTable(tableModel)
+        return JBScrollPane(table)
+    }
+
+    private fun apiPanel(): JPanel {
+        val apiPanel = JPanel(FlowLayout(FlowLayout.LEFT))
+        apiPanel.add(JLabel("接口路径:"))
+        apiPanel.add(apiField.apply {
+            text = "/api/agents/{id}"
+            preferredSize = Dimension(300, preferredSize.height)
+        })
+        return apiPanel
+    }
+
+    private fun createPanel(): JPanel {
+        val panel = JPanel().apply {
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+        }
+        panel.layout = BoxLayout(panel, BoxLayout.Y_AXIS)
+        return panel
     }
 }
