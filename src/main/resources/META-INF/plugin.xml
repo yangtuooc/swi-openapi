@@ -26,10 +26,12 @@
   <!-- Extension points defined by the plugin.
        Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
   <extensions defaultExtensionNs="com.intellij">
+    <codeInsight.lineMarkerProvider
+      language="go"
+      implementationClass="cn.haloop.swi.helper.providers.SwiLineMarkerProvider"/>
   </extensions>
   <actions>
     <action id="SwiStructAction" class="cn.haloop.swi.helper.actions.SwiStructAction" text="转换struct为Apifox模型">
-      <add-to-group group-id="GenerateGroup" anchor="first"/>
     </action>
   </actions>
 </idea-plugin>
