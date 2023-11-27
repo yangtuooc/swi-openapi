@@ -3,9 +3,11 @@ package cn.haloop.swi.helper.dialog
 /**
  * @author yangtuo
  */
+import cn.haloop.swi.helper.visitor.SwiGoStructVisitor
 import com.goide.psi.*
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
+import com.intellij.psi.ResolveState
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.table.JBTable
@@ -55,12 +57,32 @@ class SwiApiDocDialog(private val elt: GoReferenceExpression) : DialogWrapper(el
         Messages.showInfoMessage("导出选项：$option", "导出")
     }
 
-    private fun generateModelData(): Array<Array<Any>> {
-        // 从解析代码或其他来源获取数据
+    private fun bindFunctions(): Array<String> {
         return arrayOf(
-            arrayOf("name", "string", "name of agent"),
-            arrayOf("gender", "enum", "gender")
+            "ShouldBindJSON"
         )
+    }
+
+    private fun generateModelData(): Array<Array<Any>> {
+
+        val argumentList = PsiTreeUtil.findChildOfType(elt.parent, GoArgumentList::class.java)
+        val controllerMethod = argumentList?.expressionList?.get(1)?.reference?.resolve()
+        controllerMethod?.let {
+            // 1. 定位函数调用
+            val callExprs = PsiTreeUtil.findChildrenOfType(controllerMethod, GoCallExpr::class.java)
+            val bindCall = callExprs.firstOrNull { it.text.contains("ShouldBindJSON") }
+
+            //2. 提取变量
+            val reqReference = when (val reqArgument = bindCall?.argumentList?.expressionList?.firstOrNull()) {
+                is GoUnaryExpr -> PsiTreeUtil.findChildOfType(reqArgument, GoReferenceExpression::class.java)
+                is GoReferenceExpression -> reqArgument
+                else -> null
+            }
+            val visitor = SwiGoStructVisitor()
+            reqReference?.getGoType(ResolveState.initial())?.contextlessResolve()?.accept(visitor)
+            return visitor.toArrays()
+        }
+        return arrayOf()
     }
 
 
