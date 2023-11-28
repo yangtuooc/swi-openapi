@@ -28,7 +28,7 @@ class SwiApiDocDialog(private val elt: GoCallExpr) : DialogWrapper(elt.project) 
         panel.add(SwiHttpRequestTypePanel(elt.expression.lastChild.text))
         panel.add(JSeparator())
 
-        val requestPanel = SwiRequestPanel(payloadResolver.resolve(elt).body)
+        val requestPanel = SwiRequestPanel(payloadResolver.resolve(elt))
         panel.add(requestPanel.title())
         panel.add(requestPanel.table())
 

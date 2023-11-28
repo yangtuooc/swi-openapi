@@ -20,7 +20,8 @@ class SwiPayloadResolver {
         val path =
             callExprs.filter { it.expression.text.contains("Param") }.map { it.argumentList }.map { it.expressionList }
         val body =
-            callExprs.filter { it.expression.text.contains("Bind") }.map { it.argumentList }.map { it.expressionList }
+            callExprs.filter { it.expression.text.contains("BindJSON") }.map { it.argumentList }
+                .map { it.expressionList }
 
         if (query.isEmpty() && path.isEmpty() && body.isEmpty()) {
             return SwiPayload.empty()
@@ -31,8 +32,8 @@ class SwiPayloadResolver {
         if (query.isNotEmpty()) {
             val queryList = query.first()
             queryList.forEach { queryExpr ->
-                val queryName = queryExpr.text
-                println("query-name: $queryName")
+                val arrays = resolveQuery(queryExpr)
+                swiPayload.query.addAll(arrays)
             }
         }
 
@@ -53,6 +54,23 @@ class SwiPayloadResolver {
         }
 
         return swiPayload
+    }
+
+    private fun resolveQuery(queryExpr: GoExpression): Collection<MutableList<Any>> {
+        return when (queryExpr) {
+            is GoUnaryExpr -> {
+                val referenceExpression = PsiTreeUtil.findChildOfType(queryExpr, GoReferenceExpression::class.java)
+                val visitor = SwiGoStructVisitor()
+                val resolvedType = when (val goType = referenceExpression?.getGoType(ResolveState.initial())) {
+                    is GoPointerType -> goType.type
+                    else -> goType
+                }
+                resolvedType?.contextlessResolve()?.accept(visitor)
+                visitor.toList()
+            }
+
+            else -> emptyList()
+        }
     }
 
     private fun resolveBody(bodyExpr: GoExpression): MutableList<MutableList<Any>> {

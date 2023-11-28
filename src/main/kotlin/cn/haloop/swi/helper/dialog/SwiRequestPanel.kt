@@ -1,5 +1,6 @@
 package cn.haloop.swi.helper.dialog
 
+import cn.haloop.swi.helper.resovler.SwiPayload
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.table.JBTable
 import java.awt.FlowLayout
@@ -10,7 +11,7 @@ import javax.swing.table.DefaultTableModel
 /**
  * @author yangtuo
  */
-class SwiRequestPanel(data: MutableList<MutableList<Any>>) : JPanel() {
+class SwiRequestPanel(private val payload: SwiPayload) : JPanel() {
 
     private val tableModel = object : DefaultTableModel() {
         override fun isCellEditable(row: Int, column: Int): Boolean {
@@ -24,9 +25,23 @@ class SwiRequestPanel(data: MutableList<MutableList<Any>>) : JPanel() {
     private val tablePanel = JBScrollPane();
 
     init {
-        titlePanel.add(JLabel("请求体:"))
-        tableModel.setColumnIdentifiers(columnNames)
-        data.forEach { tableModel.addRow(it.toTypedArray()) }
+        if (payload.body.isNotEmpty()) {
+            titlePanel.add(JLabel("requestBody:"))
+            tableModel.setColumnIdentifiers(columnNames)
+            payload.body.forEach { tableModel.addRow(it.toTypedArray()) }
+        }
+
+        if (payload.query.isNotEmpty()) {
+            titlePanel.add(JLabel("queryString:"))
+            tableModel.setColumnIdentifiers(columnNames)
+            payload.query.forEach { tableModel.addRow(it.toTypedArray()) }
+        }
+
+        if (payload.path.isNotEmpty()) {
+            titlePanel.add(JLabel("pathVariable:"))
+            tableModel.setColumnIdentifiers(columnNames)
+            payload.path.forEach { tableModel.addRow(it.toTypedArray()) }
+        }
 
 
         val table = JBTable(tableModel)
