@@ -4,6 +4,7 @@ package cn.haloop.swi.helper.dialog
  * @author yangtuo
  */
 import cn.haloop.swi.helper.resovler.SwiPathResolver
+import cn.haloop.swi.helper.resovler.SwiPayloadResolver
 import cn.haloop.swi.helper.visitor.SwiGoStructVisitor
 import com.goide.psi.GoArgumentList
 import com.goide.psi.GoCallExpr
@@ -14,12 +15,11 @@ import com.intellij.openapi.ui.Messages
 import com.intellij.psi.ResolveState
 import com.intellij.psi.util.PsiTreeUtil
 import javax.swing.*
-import javax.swing.table.DefaultTableModel
 
 class SwiApiDocDialog(private val elt: GoCallExpr) : DialogWrapper(elt.project) {
-    private val tableModel = DefaultTableModel()
     private val exportOptions = listOf("ApiFox", "OpenAPI", "Swagger")
     private val pathResolver = SwiPathResolver()
+    private val payloadResolver = SwiPayloadResolver()
 
     init {
         init() // 初始化对话框
@@ -34,13 +34,17 @@ class SwiApiDocDialog(private val elt: GoCallExpr) : DialogWrapper(elt.project) 
         panel.add(SwiHttpRequestTypePanel(elt.expression.lastChild.text))
         panel.add(JSeparator())
 
-        val requestPanel = SwiRequestPanel(requestModel())
+        val requestPanel = SwiRequestPanel(payloadResolver.resolve(elt).body)
         panel.add(requestPanel.title())
         panel.add(requestPanel.table())
+
 
         val responsePanel = SwiResponsePanel(requestModel())
         panel.add(responsePanel.title())
         panel.add(responsePanel.table())
+
+        panel.add(JSeparator())
+        panel.add(SwiSerializationPanel())
 
         // 导出选项
         val exportPanel = JPanel()

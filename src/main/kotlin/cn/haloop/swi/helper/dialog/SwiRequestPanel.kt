@@ -12,7 +12,11 @@ import javax.swing.table.DefaultTableModel
  */
 class SwiRequestPanel(data: Array<Array<Any>>) : JPanel() {
 
-    private val tableModel = DefaultTableModel()
+    private val tableModel = object : DefaultTableModel() {
+        override fun isCellEditable(row: Int, column: Int): Boolean {
+            return false
+        }
+    }
 
     private val columnNames = arrayOf("字段", "类型", "标题", "描述")
 
@@ -23,6 +27,7 @@ class SwiRequestPanel(data: Array<Array<Any>>) : JPanel() {
         titlePanel.add(JLabel("请求体:"))
         tableModel.setColumnIdentifiers(columnNames)
         data.forEach { tableModel.addRow(it) }
+
 
         val table = JBTable(tableModel)
         tablePanel.setViewportView(table)

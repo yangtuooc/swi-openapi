@@ -12,7 +12,11 @@ import javax.swing.table.DefaultTableModel
  */
 class SwiResponsePanel(data: Array<Array<Any>>) : JPanel() {
 
-    private val tableModel = DefaultTableModel()
+    private val tableModel = object : DefaultTableModel() {
+        override fun isCellEditable(row: Int, column: Int): Boolean {
+            return false
+        }
+    }
 
     private val columnNames = arrayOf("字段", "类型", "标题", "描述")
 
