@@ -20,7 +20,8 @@ class SwiPayloadResolver {
         val path =
             callExprs.filter { it.expression.text.contains("Param") }.map { it.argumentList }.map { it.expressionList }
         val body =
-            callExprs.filter { it.expression.text.contains("BindJSON") }.map { it.argumentList }
+            callExprs.filter { it.expression.text.contains("BindJSON") || it.expression.text.contains("ShouldBind") }
+                .map { it.argumentList }
                 .map { it.expressionList }
 
         if (query.isEmpty() && path.isEmpty() && body.isEmpty()) {

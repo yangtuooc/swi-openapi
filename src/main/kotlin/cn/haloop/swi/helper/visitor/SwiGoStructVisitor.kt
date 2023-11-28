@@ -2,6 +2,7 @@ package cn.haloop.swi.helper.visitor
 
 import com.goide.psi.GoRecursiveVisitor
 import com.goide.psi.GoStructType
+import com.intellij.psi.ResolveState
 
 /**
  * @author yangtuo
@@ -11,15 +12,27 @@ class SwiGoStructVisitor : GoRecursiveVisitor() {
     private val structMetas = mutableListOf<StructMeta>()
 
     override fun visitStructType(o: GoStructType) {
-        o.fieldDeclarationList.forEach {
-            val structMeta = StructMeta()
-            structMeta.name = it.fieldDefinitionList.firstOrNull()?.name.toString()
-            structMeta.type = it.type!!.text
-            structMeta.title = it.fieldDefinitionList.firstOrNull()?.name.toString()
-            structMeta.desc = ""
-            structMetas.add(structMeta)
+        o.fieldDeclarationList.forEach { fieldDeclaration ->
+            if (fieldDeclaration.fieldDefinitionList.isNotEmpty()) {
+                // 正常字段
+                fieldDeclaration.fieldDefinitionList.forEach { fieldDef ->
+                    val structMeta = StructMeta()
+                    structMeta.name = fieldDef.name.toString()
+                    structMeta.type = fieldDeclaration.type?.text ?: "Unknown Type"
+                    structMeta.title = fieldDef.name.toString()
+                    structMeta.desc = "" // 这里添加逻辑来提取字段描述
+                    structMetas.add(structMeta)
+                }
+            } else {
+                // 处理嵌入的结构体
+                val embeddedStructType = fieldDeclaration.type ?: fieldDeclaration.anonymousFieldDefinition?.type
+                val embeddedVisitor = SwiGoStructVisitor()
+                embeddedStructType?.resolve(ResolveState.initial())?.accept(embeddedVisitor)
+                structMetas.addAll(embeddedVisitor.structMetas)
+            }
         }
     }
+
 
     class StructMeta {
         var name: String = ""
