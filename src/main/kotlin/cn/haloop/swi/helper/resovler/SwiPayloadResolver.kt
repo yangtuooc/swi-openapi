@@ -1,12 +1,15 @@
 package cn.haloop.swi.helper.resovler
 
-import com.goide.psi.GoCallExpr
+import cn.haloop.swi.helper.visitor.SwiGoStructVisitor
+import com.goide.psi.*
+import com.intellij.psi.ResolveState
 import com.intellij.psi.util.PsiTreeUtil
 
 /**
  * @author yangtuo
  */
 class SwiPayloadResolver {
+
 
     fun resolve(expr: GoCallExpr): SwiPayload {
         val controllerMethod =
@@ -22,6 +25,8 @@ class SwiPayloadResolver {
         if (query.isEmpty() && path.isEmpty() && body.isEmpty()) {
             return SwiPayload.empty()
         }
+
+        val swiPayload = SwiPayload.empty()
 
         if (query.isNotEmpty()) {
             val queryList = query.first()
@@ -42,24 +47,40 @@ class SwiPayloadResolver {
         if (body.isNotEmpty()) {
             val bodyList = body.first()
             bodyList.forEach { bodyExpr ->
-                val bodyName = bodyExpr.text
-                println("body-name: $bodyName")
+                val arrays = resolveBody(bodyExpr)
+                swiPayload.appendToBody(arrays)
             }
         }
 
-        // TODO: 提取请求参数
-        return SwiPayload.empty()
+        return swiPayload
+    }
+
+    private fun resolveBody(bodyExpr: GoExpression): MutableList<MutableList<Any>> {
+        val referenceExpression = when (bodyExpr) {
+            is GoUnaryExpr -> PsiTreeUtil.findChildOfType(bodyExpr, GoReferenceExpression::class.java)
+            is GoReferenceExpression -> bodyExpr
+            else -> null
+        }
+        val visitor = SwiGoStructVisitor()
+        val resolvedType = when (val goType = referenceExpression?.getGoType(ResolveState.initial())) {
+            is GoPointerType -> goType.type
+            else -> goType
+        }
+        resolvedType?.contextlessResolve()?.accept(visitor)
+        return visitor.toList()
     }
 }
 
 class SwiPayload {
-    var query: Array<Array<Any>> = emptyArray()
-    var path: Array<Array<Any>> = emptyArray()
-    var body: Array<Array<Any>> = emptyArray()
+    var query: MutableList<MutableList<Any>> = mutableListOf()
+    var path: MutableList<MutableList<Any>> = mutableListOf()
+    var body: MutableList<MutableList<Any>> = mutableListOf()
 
     companion object {
-        fun empty(): SwiPayload {
-            return SwiPayload()
-        }
+        fun empty(): SwiPayload = SwiPayload()
+    }
+
+    fun appendToBody(element: MutableList<MutableList<Any>>) {
+        body.addAll(element)
     }
 }

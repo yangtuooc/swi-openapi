@@ -13,9 +13,9 @@ class SwiGoStructVisitor : GoRecursiveVisitor() {
     override fun visitStructType(o: GoStructType) {
         o.fieldDeclarationList.forEach {
             val structMeta = StructMeta()
-            structMeta.name = it.fieldDefinitionList[0].name!!
+            structMeta.name = it.fieldDefinitionList.firstOrNull()?.name.toString()
             structMeta.type = it.type!!.text
-            structMeta.title = it.fieldDefinitionList[0].name!!
+            structMeta.title = it.fieldDefinitionList.firstOrNull()?.name.toString()
             structMeta.desc = ""
             structMetas.add(structMeta)
         }
@@ -27,12 +27,12 @@ class SwiGoStructVisitor : GoRecursiveVisitor() {
         var title: String = ""
         var desc: String = ""
 
-        fun toArray(): Array<Any> {
-            return arrayOf(name, type, title, desc)
+        fun toList(): MutableList<Any> {
+            return mutableListOf(name, type, title, desc)
         }
     }
 
-    fun toArrays(): Array<Array<Any>> {
-        return structMetas.map { it.toArray() }.toTypedArray()
+    fun toList(): MutableList<MutableList<Any>> {
+        return structMetas.map { it.toList() }.toMutableList()
     }
 }

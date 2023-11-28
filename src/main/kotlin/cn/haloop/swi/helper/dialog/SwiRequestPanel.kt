@@ -10,7 +10,7 @@ import javax.swing.table.DefaultTableModel
 /**
  * @author yangtuo
  */
-class SwiRequestPanel(data: Array<Array<Any>>) : JPanel() {
+class SwiRequestPanel(data: MutableList<MutableList<Any>>) : JPanel() {
 
     private val tableModel = object : DefaultTableModel() {
         override fun isCellEditable(row: Int, column: Int): Boolean {
@@ -26,7 +26,7 @@ class SwiRequestPanel(data: Array<Array<Any>>) : JPanel() {
     init {
         titlePanel.add(JLabel("请求体:"))
         tableModel.setColumnIdentifiers(columnNames)
-        data.forEach { tableModel.addRow(it) }
+        data.forEach { tableModel.addRow(it.toTypedArray()) }
 
 
         val table = JBTable(tableModel)
