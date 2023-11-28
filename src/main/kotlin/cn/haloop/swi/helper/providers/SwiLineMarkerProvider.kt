@@ -19,12 +19,12 @@ class SwiLineMarkerProvider : LineMarkerProvider {
             val callExpr = element.parent as GoCallExpr
             if (isRouteMethodCall(callExpr)) {
                 return LineMarkerInfo(
-                    element,
-                    element.textRange,
+                    callExpr.expression.lastChild,
+                    callExpr.expression.lastChild.textRange,
                     ApiIcon.API_ICON,
                     { "Api Document" },
                     { e, elt ->
-                        SwiNavigationHandler().navigate(e, elt as GoReferenceExpression)
+                        SwiNavigationHandler().navigate(e, elt)
                     },
                     GutterIconRenderer.Alignment.LEFT,
                     { "Api Document" }
@@ -44,7 +44,6 @@ class SwiLineMarkerProvider : LineMarkerProvider {
     }
 
     private fun isHttpMethod(methodName: String): Boolean {
-        // 直接使用 Kotlin 的字符串比较，不需要转换为大写
         return methodName in listOf("GET", "POST", "PUT", "DELETE")
     }
 }
