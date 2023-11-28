@@ -43,7 +43,6 @@ class SwiRequestPanel(private val payload: SwiPayload) : JPanel() {
             payload.path.forEach { tableModel.addRow(it.toTypedArray()) }
         }
 
-
         val table = JBTable(tableModel)
         tablePanel.setViewportView(table)
     }

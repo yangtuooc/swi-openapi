@@ -40,8 +40,8 @@ class SwiPayloadResolver {
         if (path.isNotEmpty()) {
             val pathList = path.first()
             pathList.forEach { pathExpr ->
-                val pathName = pathExpr.text
-                println("path-name: $pathName")
+                val arrays = resolvePath(pathExpr)
+                swiPayload.path.addAll(arrays)
             }
         }
 
@@ -54,6 +54,10 @@ class SwiPayloadResolver {
         }
 
         return swiPayload
+    }
+
+    private fun resolvePath(pathExpr: GoExpression): Collection<MutableList<Any>> {
+        return mutableListOf(mutableListOf(pathExpr.text.trim('"'), "string", "", ""))
     }
 
     private fun resolveQuery(queryExpr: GoExpression): Collection<MutableList<Any>> {
