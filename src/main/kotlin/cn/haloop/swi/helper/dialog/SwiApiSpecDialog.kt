@@ -13,7 +13,7 @@ import javax.swing.*
 class SwiApiSpecDialog(private val elt: GoCallExpr) : DialogWrapper(elt.project) {
     private val exportOptions = listOf("ApiFox", "OpenAPI", "Swagger")
     private val pathResolver = SwiPathResolver()
-    private val requestPayloadResolver = SwiPayloadResolver(elt)
+    private val payloadResolver = SwiPayloadResolver(elt)
 
     init {
         init() // 初始化对话框
@@ -28,12 +28,12 @@ class SwiApiSpecDialog(private val elt: GoCallExpr) : DialogWrapper(elt.project)
         panel.add(SwiHttpRequestTypePanel(elt.expression.lastChild.text))
         panel.add(JSeparator())
 
-        val requestPanel = SwiRequestPanel(requestPayloadResolver.resolveRequestPayload())
+        val requestPanel = SwiRequestPanel(payloadResolver.resolveRequestPayload())
         panel.add(requestPanel.title())
         panel.add(requestPanel.table())
 
 
-        val responsePanel = SwiResponsePanel(requestPayloadResolver.resolveResponsePayload())
+        val responsePanel = SwiResponsePanel(payloadResolver.resolveResponsePayload())
         panel.add(responsePanel.title())
         panel.add(responsePanel.table())
 
@@ -55,21 +55,36 @@ class SwiApiSpecDialog(private val elt: GoCallExpr) : DialogWrapper(elt.project)
 
     private fun exportAction(option: String) {
         if ("ApiFox" == option) {
-            val requestPayload = requestPayloadResolver.resolveRequestPayload()
-            val body = requestPayload.body
-            if (body.isNotEmpty()) {
-                val schema = ApiFoxSchema()
-                schema.setType("object")
-                body.forEach {
+            val requestPayload = payloadResolver.resolveRequestPayload()
+            val responsePayload = payloadResolver.resolveResponsePayload()
+            var requestSchema: ApiFoxSchema? = null
+            var responseSchema: ApiFoxSchema? = null
+
+            if (responsePayload.body.isNotEmpty()) {
+                responseSchema = ApiFoxSchema()
+                responseSchema.setType("object")
+                responsePayload.body.forEach {
                     val properties = ApiFoxSchema()
                     if (!it.isReference) {
-                        properties.setType(GoTypeMapper.from(it.fieldType).toApiFoxType())
+                        properties.setType(it.fieldType)
                         properties.setTitle(it.fieldDesc)
-                        schema.addProperty(it.fieldName, properties)
+                        responseSchema.addProperty(it.fieldName, properties)
                     }
                 }
-                SwiApiSchemaDialog(elt.project, schema).show()
             }
+            if (requestPayload.body.isNotEmpty()) {
+                requestSchema = ApiFoxSchema()
+                requestSchema.setType("object")
+                requestPayload.body.forEach {
+                    val properties = ApiFoxSchema()
+                    if (!it.isReference) {
+                        properties.setType(it.fieldType)
+                        properties.setTitle(it.fieldDesc)
+                        requestSchema.addProperty(it.fieldName, properties)
+                    }
+                }
+            }
+            SwiApiSchemaDialog(elt.project, requestSchema, responseSchema).show()
         }
     }
 
