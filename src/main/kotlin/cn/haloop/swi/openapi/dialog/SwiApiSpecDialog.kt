@@ -66,7 +66,7 @@ class SwiApiSpecDialog(private val elt: GoCallExpr) : DialogWrapper(elt.project)
                 responsePayload.body.forEach {
                     val properties = ApiFoxSchema()
                     if (!it.isReference) {
-                        properties.setType(it.fieldType)
+                        properties.setType(GoTypeMapper.from(it.fieldType).toApiFoxType())
                         properties.setTitle(it.fieldDesc)
                         responseSchema.addProperty(it.fieldName, properties)
                     }
@@ -78,7 +78,7 @@ class SwiApiSpecDialog(private val elt: GoCallExpr) : DialogWrapper(elt.project)
                 requestPayload.body.forEach {
                     val properties = ApiFoxSchema()
                     if (!it.isReference) {
-                        properties.setType(it.fieldType)
+                        properties.setType(GoTypeMapper.from(it.fieldType).toApiFoxType())
                         properties.setTitle(it.fieldDesc)
                         requestSchema.addProperty(it.fieldName, properties)
                     }
