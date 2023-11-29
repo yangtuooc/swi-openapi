@@ -75,6 +75,7 @@ class SwiGoStructVisitor : GoRecursiveVisitor() {
     private fun visitResolvedTypeSpec(typeSpec: GoTypeSpec, metadata: GoTypeSpecMetadata) {
         val embeddedVisitor = SwiGoStructVisitor()
         typeSpec.accept(embeddedVisitor)
+        embeddedVisitor.structMetas.forEach { it.isReference = true }
         metadata.references = embeddedVisitor.structMetas
     }
 

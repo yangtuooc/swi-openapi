@@ -28,13 +28,24 @@ class ApiFoxSchemaResolver {
             return properties
         }
         if (spec.isArray) {
+            properties = SwiMapApiFoxSchema()
             properties.setType("array")
-            val itemsProperties = SwiCompositeApiFoxSchema()
-            spec.references.forEach {
-                val refSchema = resolveSchema(it)
-                itemsProperties.addProperty(it.fieldName, refSchema)
+            var itemsProperties: SwiApiFoxSchema = SwiCompositeApiFoxSchema()
+            if (spec.references.all { it.isReference }) {
+                itemsProperties.setType("object")
+                spec.references.forEach {
+                    val props: SwiApiFoxSchema = SwiCompositeApiFoxSchema()
+                    props.setType(GoTypeMapper.from(it.fieldType).toApiFoxType())
+                    props.setTitle(it.fieldDesc)
+                    itemsProperties.addProperty(it.fieldName, props)
+                }
+                properties.addProperty("items", itemsProperties)
+                return properties
             }
-            properties.addProperty("items", itemsProperties)
+            val metadata = spec.references.first()
+            val props: SwiApiFoxSchema = SwiCompositeApiFoxSchema()
+            props.setType(GoTypeMapper.from(metadata.fieldType).toApiFoxType())
+            properties.addProperty("items", props)
             return properties
         }
         properties = SwiMapApiFoxSchema()
