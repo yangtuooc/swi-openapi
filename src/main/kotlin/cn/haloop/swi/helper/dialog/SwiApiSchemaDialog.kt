@@ -28,7 +28,7 @@ class SwiApiSchemaDialog(project: Project, private val schema: ApiFoxSchema) : D
     }
 
     override fun createCenterPanel(): JComponent {
-        val jsonStr = om.writeValueAsString(schema)
+        val jsonStr = om.writerWithDefaultPrettyPrinter().writeValueAsString(schema)
         val textArea = JTextArea(jsonStr)
         textArea.isEditable = false
         textArea.lineWrap = true
