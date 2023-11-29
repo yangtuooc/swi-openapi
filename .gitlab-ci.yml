@@ -1,0 +1,19 @@
+image: gradle:latest
+
+stages:
+  - build
+  - deploy
+
+build:
+  stage: build
+  script:
+    - ./gradlew assemble
+
+deploy:
+  stage: deploy
+  script:
+    - ./gradlew publish
+  only:
+    - main
+  when: manual
+  allow_failure: false

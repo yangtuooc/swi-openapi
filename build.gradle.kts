@@ -2,6 +2,7 @@ plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "1.9.0"
     id("org.jetbrains.intellij") version "1.15.0"
+    id("maven-publish")
 }
 
 group = "cn.haloop"
@@ -55,3 +56,28 @@ tasks {
         token.set(System.getenv("PUBLISH_TOKEN"))
     }
 }
+
+
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            from(components["java"])
+            // 根据需要设置 groupId, artifactId, version
+        }
+    }
+    repositories {
+        maven {
+            url = uri("https://jihulab.com/api/v4/projects/170168/packages/maven")
+            credentials(HttpHeaderCredentials::class) {
+                name = "Job-Token"
+                value = System.getenv("CI_JOB_TOKEN")
+            }
+            authentication {
+                create<HttpHeaderAuthentication>("header")
+            }
+        }
+    }
+}
+
+
