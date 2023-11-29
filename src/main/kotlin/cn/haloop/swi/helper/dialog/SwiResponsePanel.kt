@@ -1,5 +1,6 @@
 package cn.haloop.swi.helper.dialog
 
+import cn.haloop.swi.helper.resovler.SwiPayload
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.table.JBTable
 import java.awt.FlowLayout
@@ -10,7 +11,7 @@ import javax.swing.table.DefaultTableModel
 /**
  * @author yangtuo
  */
-class SwiResponsePanel(data: Array<Array<Any>>) : JPanel() {
+class SwiResponsePanel(private val payload: SwiPayload) : JPanel() {
 
     private val tableModel = object : DefaultTableModel() {
         override fun isCellEditable(row: Int, column: Int): Boolean {
@@ -20,13 +21,15 @@ class SwiResponsePanel(data: Array<Array<Any>>) : JPanel() {
 
     private val columnNames = arrayOf("字段", "类型", "标题", "描述")
 
-    private val titlePanel = JPanel(FlowLayout(FlowLayout.LEFT));
+    private val titlePanel = JPanel(FlowLayout(FlowLayout.LEFT))
     private val tablePanel = JBScrollPane();
 
     init {
-        titlePanel.add(JLabel("响应体:"))
-        tableModel.setColumnIdentifiers(columnNames)
-        data.forEach { tableModel.addRow(it) }
+        if (payload.body.isNotEmpty()) {
+            titlePanel.add(JLabel("响应体:"))
+            tableModel.setColumnIdentifiers(columnNames)
+            payload.body.forEach { tableModel.addRow(it.toList().toTypedArray()) }
+        }
 
         val table = JBTable(tableModel)
         tablePanel.setViewportView(table)
