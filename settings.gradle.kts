@@ -5,4 +5,4 @@ pluginManagement {
     }
 }
 
-rootProject.name = "swi-helper"
+rootProject.name = "swi-openapi"
