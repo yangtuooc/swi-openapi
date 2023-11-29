@@ -19,8 +19,18 @@ class SwiGoStructVisitor : GoRecursiveVisitor() {
             if (fieldDeclaration.fieldDefinitionList.isNotEmpty()) {
                 // 正常字段
                 fieldDeclaration.fieldDefinitionList.forEach { fieldDef ->
+                    var jsonTag = fieldDeclaration.tag?.getValue("json")
+                    if (jsonTag?.contains("-") == true) {
+                        // 序列化时忽略该字段
+                        return@forEach
+                    }
+
                     val structMeta = GoTypeSpecMetadata()
-                    structMeta.fieldName = fieldDef.name.toString()
+                    if (jsonTag?.isNotBlank() == true) {
+                        // 去掉json tag中的omitempty
+                        jsonTag = jsonTag.replace(",omitempty", "")
+                    }
+                    structMeta.fieldName = jsonTag ?: fieldDef.name.toString()
                     val fieldType = fieldDeclaration.type
                     structMeta.fieldType = fieldType?.text ?: "Unknown Type"
                     structMeta.fieldTitle =
