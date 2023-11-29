@@ -4,7 +4,7 @@ package cn.haloop.swi.helper.dialog
  * @author yangtuo
  */
 import cn.haloop.swi.helper.resovler.SwiPathResolver
-import cn.haloop.swi.helper.resovler.SwiPayloadResolver
+import cn.haloop.swi.helper.resovler.SwiRequestPayloadResolver
 import cn.haloop.swi.helper.visitor.ApiFoxSchema
 import com.goide.psi.GoCallExpr
 import com.intellij.openapi.ui.DialogWrapper
@@ -13,7 +13,7 @@ import javax.swing.*
 class SwiApiSpecDialog(private val elt: GoCallExpr) : DialogWrapper(elt.project) {
     private val exportOptions = listOf("ApiFox", "OpenAPI", "Swagger")
     private val pathResolver = SwiPathResolver()
-    private val payloadResolver = SwiPayloadResolver()
+    private val payloadResolver = SwiRequestPayloadResolver()
 
     init {
         init() // 初始化对话框

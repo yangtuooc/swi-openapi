@@ -1,6 +1,5 @@
 package cn.haloop.swi.helper.resovler
 
-import cn.haloop.swi.helper.visitor.GoTypeSpecMetadata
 import cn.haloop.swi.helper.visitor.SwiGoStructVisitor
 import com.goide.psi.*
 import com.intellij.psi.ResolveState
@@ -9,7 +8,7 @@ import com.intellij.psi.util.PsiTreeUtil
 /**
  * @author yangtuo
  */
-class SwiPayloadResolver {
+class SwiRequestPayloadResolver {
 
 
     fun resolve(expr: GoCallExpr): SwiPayload {
@@ -96,16 +95,3 @@ class SwiPayloadResolver {
     }
 }
 
-class SwiPayload {
-    var query: MutableList<GoTypeSpecMetadata> = mutableListOf()
-    var path: MutableList<GoTypeSpecMetadata> = mutableListOf()
-    var body: MutableList<GoTypeSpecMetadata> = mutableListOf()
-
-    companion object {
-        fun empty(): SwiPayload = SwiPayload()
-    }
-
-    fun appendToBody(element: MutableList<GoTypeSpecMetadata>) {
-        body.addAll(element)
-    }
-}
