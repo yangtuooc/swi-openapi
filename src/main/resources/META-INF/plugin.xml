@@ -32,7 +32,5 @@
       implementationClass="cn.haloop.swi.helper.providers.SwiLineMarkerProvider"/>
   </extensions>
   <actions>
-    <action id="SwiStructAction" class="cn.haloop.swi.helper.actions.SwiStructAction" text="转换struct为Apifox模型">
-    </action>
   </actions>
 </idea-plugin>
