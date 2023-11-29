@@ -12,49 +12,70 @@ import cn.haloop.swi.openapi.schema.SwiPayload
 class ApiFoxSchemaResolver {
 
     fun resolve(payload: SwiPayload): SwiCompositeApiFoxSchema {
-        val schema = SwiCompositeApiFoxSchema()
-        schema.setType("object")
-        payload.body.forEach {
-            schema.addProperty(it.fieldName, resolveSchema(it))
+        return SwiCompositeApiFoxSchema().apply {
+            setType("object")
+            payload.body.forEach { addProperty(it.fieldName, resolveSchema(it)) }
         }
-        return schema
     }
 
     private fun resolveSchema(spec: GoTypeSpecMetadata): SwiApiFoxSchema {
-        var properties: SwiApiFoxSchema = SwiCompositeApiFoxSchema()
-        if (!spec.isReference) {
-            properties.setType(GoTypeMapper.from(spec.fieldType).toApiFoxType())
-            properties.setTitle(spec.fieldDesc)
-            return properties
+        return if (spec.isReference) {
+            resolveReferenceSchema(spec)
+        } else {
+            resolveNonReferenceSchema(spec)
         }
-        if (spec.isArray) {
-            properties = SwiMapApiFoxSchema()
-            properties.setType("array")
-            var itemsProperties: SwiApiFoxSchema = SwiCompositeApiFoxSchema()
-            if (spec.references.all { it.isReference }) {
-                itemsProperties.setType("object")
-                spec.references.forEach {
-                    val props: SwiApiFoxSchema = SwiCompositeApiFoxSchema()
-                    props.setType(GoTypeMapper.from(it.fieldType).toApiFoxType())
-                    props.setTitle(it.fieldDesc)
-                    itemsProperties.addProperty(it.fieldName, props)
-                }
-                properties.addProperty("items", itemsProperties)
-                return properties
+    }
+
+    private fun resolveNonReferenceSchema(spec: GoTypeSpecMetadata): SwiApiFoxSchema {
+        return SwiCompositeApiFoxSchema().apply {
+            setType(GoTypeMapper.from(spec.fieldType).toApiFoxType())
+            setTitle(spec.fieldDesc)
+        }
+    }
+
+    private fun resolveReferenceSchema(spec: GoTypeSpecMetadata): SwiApiFoxSchema {
+        return if (spec.isArray) {
+            resolveArraySchema(spec)
+        } else {
+            resolveObjectSchema(spec)
+        }
+    }
+
+    private fun resolveArraySchema(spec: GoTypeSpecMetadata): SwiApiFoxSchema {
+        val itemsSchema = if (spec.references.all { it.isReference }) {
+            resolveCompositeSchema(spec.references)
+        } else {
+            SwiCompositeApiFoxSchema().apply {
+                setType(GoTypeMapper.from(spec.references.first().fieldType).toApiFoxType())
             }
-            val metadata = spec.references.first()
-            val props: SwiApiFoxSchema = SwiCompositeApiFoxSchema()
-            props.setType(GoTypeMapper.from(metadata.fieldType).toApiFoxType())
-            properties.addProperty("items", props)
-            return properties
         }
-        properties = SwiMapApiFoxSchema()
-        properties.setType("object")
-        val objProperties = SwiMapApiFoxSchema()
-        spec.references.forEach {
-            objProperties[it.fieldName] = resolveSchema(it)
+        return SwiMapApiFoxSchema().apply {
+            setType("array")
+            addProperty("items", itemsSchema)
         }
-        properties.addProperty("properties", objProperties)
-        return properties
+    }
+
+    private fun resolveObjectSchema(spec: GoTypeSpecMetadata): SwiApiFoxSchema {
+        val propertiesSchema = SwiMapApiFoxSchema().apply {
+            spec.references.forEach { addProperty(it.fieldName, resolveSchema(it)) }
+        }
+        return SwiMapApiFoxSchema().apply {
+            setType("object")
+            addProperty("properties", propertiesSchema)
+        }
+    }
+
+    private fun resolveCompositeSchema(references: List<GoTypeSpecMetadata>): SwiApiFoxSchema {
+        return SwiCompositeApiFoxSchema().apply {
+            setType("object")
+            references.forEach {
+                val propSchema = SwiCompositeApiFoxSchema().apply {
+                    setType(GoTypeMapper.from(it.fieldType).toApiFoxType())
+                    setTitle(it.fieldDesc)
+                }
+                addProperty(it.fieldName, propSchema)
+            }
+        }
     }
 }
+

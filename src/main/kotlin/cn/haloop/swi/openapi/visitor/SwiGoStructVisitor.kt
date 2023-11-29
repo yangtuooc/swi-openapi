@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 class SwiGoStructVisitor : GoRecursiveVisitor() {
 
-    private val structMetas = mutableListOf<GoTypeSpecMetadata>()
+    private val goTypeSpecMetadata = mutableListOf<GoTypeSpecMetadata>()
     private val metadataStack = Stack<GoTypeSpecMetadata>()
     private val depth = AtomicInteger(0)
 
@@ -38,7 +38,7 @@ class SwiGoStructVisitor : GoRecursiveVisitor() {
         if (jsonTag?.contains("-") == true) return // 序列化时忽略该字段
 
         val metadata = createMetadata(fieldDeclaration, fieldDef, jsonTag)
-        structMetas.add(metadata)
+        goTypeSpecMetadata.add(metadata)
 
         val fieldType = fieldDeclaration.type
         if (!isPrimitiveType(fieldType)) {
@@ -72,11 +72,18 @@ class SwiGoStructVisitor : GoRecursiveVisitor() {
         }
     }
 
+
     private fun visitResolvedTypeSpec(typeSpec: GoTypeSpec, metadata: GoTypeSpecMetadata) {
+        if (isPrimitiveType(typeSpec.getGoType(ResolveState.initial()))) {
+            metadata.references = mutableListOf(GoTypeSpecMetadata().apply {
+                fieldType = typeSpec.identifier.text
+            })
+            return
+        }
         val embeddedVisitor = SwiGoStructVisitor()
         typeSpec.accept(embeddedVisitor)
-        embeddedVisitor.structMetas.forEach { it.isReference = true }
-        metadata.references = embeddedVisitor.structMetas
+        embeddedVisitor.goTypeSpecMetadata.forEach { it.isReference = true }
+        metadata.references = embeddedVisitor.goTypeSpecMetadata
     }
 
     private fun createMetadata(
@@ -102,7 +109,7 @@ class SwiGoStructVisitor : GoRecursiveVisitor() {
         embeddedStructType?.resolve(ResolveState.initial())?.let {
             val embeddedVisitor = SwiGoStructVisitor()
             it.accept(embeddedVisitor)
-            structMetas.addAll(embeddedVisitor.structMetas)
+            goTypeSpecMetadata.addAll(embeddedVisitor.goTypeSpecMetadata)
         }
     }
 
@@ -115,7 +122,11 @@ class SwiGoStructVisitor : GoRecursiveVisitor() {
     }
 
     override fun visitArrayOrSliceType(o: GoArrayOrSliceType) {
-        o.type.contextlessResolve()?.let {
+        val goType = o.type
+        if (goType is GoPointerType) {
+            visitPointerType(goType)
+        }
+        goType.contextlessResolve()?.let {
             when (it) {
                 is GoPointerType -> visitPointerType(it)
                 is GoTypeSpec -> visitResolvedTypeSpec(it, metadataStack.pop())
@@ -165,10 +176,10 @@ class SwiGoStructVisitor : GoRecursiveVisitor() {
     }
 
     fun toList(): MutableList<MutableList<Any>> {
-        return structMetas.map { it.toList() }.toMutableList()
+        return goTypeSpecMetadata.map { it.toList() }.toMutableList()
     }
 
     fun structMetas(): MutableList<GoTypeSpecMetadata> {
-        return structMetas
+        return goTypeSpecMetadata
     }
 }
