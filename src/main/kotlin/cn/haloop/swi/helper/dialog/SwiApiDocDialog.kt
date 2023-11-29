@@ -7,7 +7,6 @@ import cn.haloop.swi.helper.resovler.SwiPathResolver
 import cn.haloop.swi.helper.resovler.SwiPayloadResolver
 import com.goide.psi.GoCallExpr
 import com.intellij.openapi.ui.DialogWrapper
-import com.intellij.openapi.ui.Messages
 import javax.swing.*
 
 class SwiApiDocDialog(private val elt: GoCallExpr) : DialogWrapper(elt.project) {
@@ -54,8 +53,12 @@ class SwiApiDocDialog(private val elt: GoCallExpr) : DialogWrapper(elt.project) 
     }
 
     private fun exportAction(option: String) {
-        // 处理不同的导出逻辑
-        Messages.showInfoMessage("导出选项：$option", "导出")
+        if ("ApiFox" == option) {
+            val requestPayload = payloadResolver.resolve(elt)
+            if (requestPayload.body.isNotEmpty()) {
+                
+            }
+        }
     }
 
 

@@ -89,6 +89,10 @@ class SwiGoStructVisitor : GoRecursiveVisitor() {
     fun toList(): MutableList<MutableList<Any>> {
         return structMetas.map { it.toList() }.toMutableList()
     }
+
+    fun structMetas(): MutableList<StructMeta> {
+        return structMetas
+    }
 }
 
 class StructMeta {

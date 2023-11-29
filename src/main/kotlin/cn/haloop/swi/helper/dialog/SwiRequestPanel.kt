@@ -28,19 +28,21 @@ class SwiRequestPanel(private val payload: SwiPayload) : JPanel() {
         if (payload.body.isNotEmpty()) {
             titlePanel.add(JLabel("requestBody:"))
             tableModel.setColumnIdentifiers(columnNames)
-            payload.body.forEach { tableModel.addRow(it.toTypedArray()) }
+            payload.body.forEach {
+                tableModel.addRow(it.toList().toTypedArray())
+            }
         }
 
         if (payload.query.isNotEmpty()) {
             titlePanel.add(JLabel("queryString:"))
             tableModel.setColumnIdentifiers(columnNames)
-            payload.query.forEach { tableModel.addRow(it.toTypedArray()) }
+            payload.query.forEach { tableModel.addRow(it.toList().toTypedArray()) }
         }
 
         if (payload.path.isNotEmpty()) {
             titlePanel.add(JLabel("pathVariable:"))
             tableModel.setColumnIdentifiers(columnNames)
-            payload.path.forEach { tableModel.addRow(it.toTypedArray()) }
+            payload.path.forEach { tableModel.addRow(it.toList().toTypedArray()) }
         }
 
         val table = JBTable(tableModel)

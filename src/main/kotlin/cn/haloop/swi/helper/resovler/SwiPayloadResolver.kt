@@ -1,5 +1,6 @@
 package cn.haloop.swi.helper.resovler
 
+import cn.haloop.swi.helper.visitor.StructMeta
 import cn.haloop.swi.helper.visitor.SwiGoStructVisitor
 import com.goide.psi.*
 import com.intellij.psi.ResolveState
@@ -41,8 +42,9 @@ class SwiPayloadResolver {
         if (path.isNotEmpty()) {
             val pathList = path.first()
             pathList.forEach { pathExpr ->
-                val arrays = resolvePath(pathExpr)
-                swiPayload.path.addAll(arrays)
+//                val arrays = resolvePath(pathExpr)
+//                swiPayload.path.addAll(arrays)
+                println(pathExpr.text)
             }
         }
 
@@ -57,11 +59,11 @@ class SwiPayloadResolver {
         return swiPayload
     }
 
-    private fun resolvePath(pathExpr: GoExpression): Collection<MutableList<Any>> {
-        return mutableListOf(mutableListOf(pathExpr.text.trim('"'), "string", "", ""))
-    }
+//    private fun resolvePath(pathExpr: GoExpression): MutableList<StructMeta> {
+//        return mutableListOf(mutableListOf(pathExpr.text.trim('"'), "string", "", ""))
+//    }
 
-    private fun resolveQuery(queryExpr: GoExpression): Collection<MutableList<Any>> {
+    private fun resolveQuery(queryExpr: GoExpression): MutableList<StructMeta> {
         return when (queryExpr) {
             is GoUnaryExpr -> {
                 val referenceExpression = PsiTreeUtil.findChildOfType(queryExpr, GoReferenceExpression::class.java)
@@ -71,14 +73,14 @@ class SwiPayloadResolver {
                     else -> goType
                 }
                 resolvedType?.contextlessResolve()?.accept(visitor)
-                visitor.toList()
+                return visitor.structMetas()
             }
 
-            else -> emptyList()
+            else -> mutableListOf()
         }
     }
 
-    private fun resolveBody(bodyExpr: GoExpression): MutableList<MutableList<Any>> {
+    private fun resolveBody(bodyExpr: GoExpression): MutableList<StructMeta> {
         val referenceExpression = when (bodyExpr) {
             is GoUnaryExpr -> PsiTreeUtil.findChildOfType(bodyExpr, GoReferenceExpression::class.java)
             is GoReferenceExpression -> bodyExpr
@@ -90,20 +92,20 @@ class SwiPayloadResolver {
             else -> goType
         }
         resolvedType?.contextlessResolve()?.accept(visitor)
-        return visitor.toList()
+        return visitor.structMetas()
     }
 }
 
 class SwiPayload {
-    var query: MutableList<MutableList<Any>> = mutableListOf()
-    var path: MutableList<MutableList<Any>> = mutableListOf()
-    var body: MutableList<MutableList<Any>> = mutableListOf()
+    var query: MutableList<StructMeta> = mutableListOf()
+    var path: MutableList<StructMeta> = mutableListOf()
+    var body: MutableList<StructMeta> = mutableListOf()
 
     companion object {
         fun empty(): SwiPayload = SwiPayload()
     }
 
-    fun appendToBody(element: MutableList<MutableList<Any>>) {
+    fun appendToBody(element: MutableList<StructMeta>) {
         body.addAll(element)
     }
 }
