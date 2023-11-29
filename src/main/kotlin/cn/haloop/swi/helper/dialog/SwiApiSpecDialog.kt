@@ -4,8 +4,7 @@ package cn.haloop.swi.helper.dialog
  * @author yangtuo
  */
 import cn.haloop.swi.helper.resovler.SwiPathResolver
-import cn.haloop.swi.helper.resovler.SwiRequestPayloadResolver
-import cn.haloop.swi.helper.resovler.SwiResponsePayloadResolver
+import cn.haloop.swi.helper.resovler.SwiPayloadResolver
 import cn.haloop.swi.helper.visitor.ApiFoxSchema
 import com.goide.psi.GoCallExpr
 import com.intellij.openapi.ui.DialogWrapper
@@ -14,8 +13,7 @@ import javax.swing.*
 class SwiApiSpecDialog(private val elt: GoCallExpr) : DialogWrapper(elt.project) {
     private val exportOptions = listOf("ApiFox", "OpenAPI", "Swagger")
     private val pathResolver = SwiPathResolver()
-    private val requestPayloadResolver = SwiRequestPayloadResolver()
-    private val responsePayloadResolver = SwiResponsePayloadResolver()
+    private val requestPayloadResolver = SwiPayloadResolver(elt)
 
     init {
         init() // 初始化对话框
@@ -30,12 +28,12 @@ class SwiApiSpecDialog(private val elt: GoCallExpr) : DialogWrapper(elt.project)
         panel.add(SwiHttpRequestTypePanel(elt.expression.lastChild.text))
         panel.add(JSeparator())
 
-        val requestPanel = SwiRequestPanel(requestPayloadResolver.resolve(elt))
+        val requestPanel = SwiRequestPanel(requestPayloadResolver.resolveRequestPayload())
         panel.add(requestPanel.title())
         panel.add(requestPanel.table())
 
 
-        val responsePanel = SwiResponsePanel(responsePayloadResolver.resolve(elt))
+        val responsePanel = SwiResponsePanel(requestPayloadResolver.resolveResponsePayload())
         panel.add(responsePanel.title())
         panel.add(responsePanel.table())
 
@@ -57,7 +55,7 @@ class SwiApiSpecDialog(private val elt: GoCallExpr) : DialogWrapper(elt.project)
 
     private fun exportAction(option: String) {
         if ("ApiFox" == option) {
-            val requestPayload = requestPayloadResolver.resolve(elt)
+            val requestPayload = requestPayloadResolver.resolveRequestPayload()
             val body = requestPayload.body
             if (body.isNotEmpty()) {
                 val schema = ApiFoxSchema()

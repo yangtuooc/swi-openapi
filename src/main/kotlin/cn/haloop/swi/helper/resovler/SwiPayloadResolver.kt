@@ -8,13 +8,23 @@ import com.intellij.psi.util.PsiTreeUtil
 /**
  * @author yangtuo
  */
-class SwiRequestPayloadResolver {
+class SwiPayloadResolver(private val expr: GoCallExpr) {
 
+    private val callExprs = resolveCallExprs()
+    fun resolveResponsePayload(): SwiPayload {
+        val responseContent = callExprs.filter { it.expression.text.contains("result.Success") }.map { it.argumentList }
+            .map { it.expressionList }
 
-    fun resolve(expr: GoCallExpr): SwiPayload {
-        val controllerMethod =
-            expr.argumentList.expressionList.lastOrNull()?.reference?.resolve() ?: return SwiPayload.empty()
-        val callExprs = PsiTreeUtil.findChildrenOfType(controllerMethod, GoCallExpr::class.java)
+        val swiPayload = SwiPayload.empty()
+        if (responseContent.isNotEmpty()) {
+            val resp = responseContent.first().first()
+            swiPayload.appendToBody(resolveType(resp))
+        }
+
+        return swiPayload
+    }
+
+    fun resolveRequestPayload(): SwiPayload {
         val query =
             callExprs.filter { it.expression.text.contains("Query") }.map { it.argumentList }.map { it.expressionList }
         val path =
@@ -50,7 +60,7 @@ class SwiRequestPayloadResolver {
         if (body.isNotEmpty()) {
             val bodyList = body.first()
             bodyList.forEach { bodyExpr ->
-                val arrays = resolveBody(bodyExpr)
+                val arrays = resolveType(bodyExpr)
                 swiPayload.appendToBody(arrays)
             }
         }
@@ -61,6 +71,12 @@ class SwiRequestPayloadResolver {
 //    private fun resolvePath(pathExpr: GoExpression): MutableList<StructMeta> {
 //        return mutableListOf(mutableListOf(pathExpr.text.trim('"'), "string", "", ""))
 //    }
+
+    private fun resolveCallExprs(): Collection<GoCallExpr> {
+        val controllerMethod =
+            expr.argumentList.expressionList.lastOrNull()?.reference?.resolve()
+        return PsiTreeUtil.findChildrenOfType(controllerMethod, GoCallExpr::class.java)
+    }
 
     private fun resolveQuery(queryExpr: GoExpression): MutableList<GoTypeSpecMetadata> {
         return when (queryExpr) {
@@ -79,7 +95,7 @@ class SwiRequestPayloadResolver {
         }
     }
 
-    private fun resolveBody(bodyExpr: GoExpression): MutableList<GoTypeSpecMetadata> {
+    private fun resolveType(bodyExpr: GoExpression): MutableList<GoTypeSpecMetadata> {
         val referenceExpression = when (bodyExpr) {
             is GoUnaryExpr -> PsiTreeUtil.findChildOfType(bodyExpr, GoReferenceExpression::class.java)
             is GoReferenceExpression -> bodyExpr
