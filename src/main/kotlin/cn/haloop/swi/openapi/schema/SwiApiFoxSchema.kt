@@ -1,4 +1,4 @@
-package cn.haloop.swi.openapi.visitor
+package cn.haloop.swi.openapi.schema
 
 /**
  * @author yangtuo

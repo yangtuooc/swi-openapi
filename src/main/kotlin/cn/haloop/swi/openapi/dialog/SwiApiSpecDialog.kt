@@ -6,7 +6,7 @@ package cn.haloop.swi.openapi.dialog
 import cn.haloop.swi.openapi.resovler.ApiFoxSchemaResolver
 import cn.haloop.swi.openapi.resovler.SwiPathResolver
 import cn.haloop.swi.openapi.resovler.SwiPayloadResolver
-import cn.haloop.swi.openapi.visitor.SwiCompositeApiFoxSchema
+import cn.haloop.swi.openapi.schema.SwiCompositeApiFoxSchema
 import com.goide.psi.GoCallExpr
 import com.intellij.openapi.ui.DialogWrapper
 import javax.swing.*

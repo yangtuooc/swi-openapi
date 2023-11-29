@@ -1,9 +1,9 @@
 package cn.haloop.swi.openapi.resovler
 
 import cn.haloop.swi.openapi.dialog.GoTypeMapper
-import cn.haloop.swi.openapi.visitor.SwiApiFoxSchema
-import cn.haloop.swi.openapi.visitor.SwiCompositeApiFoxSchema
-import cn.haloop.swi.openapi.visitor.SwiMapApiFoxSchema
+import cn.haloop.swi.openapi.schema.SwiApiFoxSchema
+import cn.haloop.swi.openapi.schema.SwiCompositeApiFoxSchema
+import cn.haloop.swi.openapi.schema.SwiMapApiFoxSchema
 
 /**
  * @author yangtuo

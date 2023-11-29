@@ -1,6 +1,6 @@
 package cn.haloop.swi.openapi.dialog
 
-import cn.haloop.swi.openapi.visitor.SwiCompositeApiFoxSchema
+import cn.haloop.swi.openapi.schema.SwiCompositeApiFoxSchema
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.intellij.json.JsonFileType

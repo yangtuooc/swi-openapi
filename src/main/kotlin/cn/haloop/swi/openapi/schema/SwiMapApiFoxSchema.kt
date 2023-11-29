@@ -1,4 +1,6 @@
-package cn.haloop.swi.openapi.visitor
+package cn.haloop.swi.openapi.schema
+
+import cn.haloop.swi.openapi.schema.SwiApiFoxSchema
 
 /**
  * @author yangtuo
