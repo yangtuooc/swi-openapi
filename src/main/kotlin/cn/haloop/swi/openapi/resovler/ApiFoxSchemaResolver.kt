@@ -4,6 +4,7 @@ import cn.haloop.swi.openapi.dialog.GoTypeMapper
 import cn.haloop.swi.openapi.schema.SwiApiFoxSchema
 import cn.haloop.swi.openapi.schema.SwiCompositeApiFoxSchema
 import cn.haloop.swi.openapi.schema.SwiMapApiFoxSchema
+import cn.haloop.swi.openapi.schema.SwiPayload
 
 /**
  * @author yangtuo

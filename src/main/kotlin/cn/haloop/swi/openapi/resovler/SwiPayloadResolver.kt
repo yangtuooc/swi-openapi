@@ -1,5 +1,6 @@
 package cn.haloop.swi.openapi.resovler
 
+import cn.haloop.swi.openapi.schema.SwiPayload
 import cn.haloop.swi.openapi.visitor.SwiGoStructVisitor
 import com.goide.psi.*
 import com.intellij.psi.ResolveState

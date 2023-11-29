@@ -1,4 +1,4 @@
-package cn.haloop.swi.openapi.providers
+package cn.haloop.swi.openapi.provider
 
 import cn.haloop.swi.openapi.icons.ApiIcon
 import cn.haloop.swi.openapi.nav.SwiNavigationHandler
