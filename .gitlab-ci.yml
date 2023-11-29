@@ -7,12 +7,12 @@ stages:
 build:
   stage: build
   script:
-    - ./gradlew assemble --no-daemon
+    - gradle assemble
 
 deploy:
   stage: deploy
   script:
-    - ./gradlew publish --no-daemon
+    - gradle publish
   only:
     - main
   when: manual
