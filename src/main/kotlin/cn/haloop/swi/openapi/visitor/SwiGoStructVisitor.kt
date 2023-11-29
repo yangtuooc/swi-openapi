@@ -46,6 +46,7 @@ class SwiGoStructVisitor : GoRecursiveVisitor() {
         }
     }
 
+    // TODO: 支持循环引用解析
     private fun processComplexType(fieldType: GoType?, metadata: GoTypeSpecMetadata) {
         when {
             GoTypeUtil.isSlice(fieldType, fieldType?.context) -> {
