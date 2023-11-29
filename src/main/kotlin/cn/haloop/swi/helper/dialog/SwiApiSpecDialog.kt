@@ -5,11 +5,12 @@ package cn.haloop.swi.helper.dialog
  */
 import cn.haloop.swi.helper.resovler.SwiPathResolver
 import cn.haloop.swi.helper.resovler.SwiPayloadResolver
+import cn.haloop.swi.helper.visitor.ApiFoxSchema
 import com.goide.psi.GoCallExpr
 import com.intellij.openapi.ui.DialogWrapper
 import javax.swing.*
 
-class SwiApiDocDialog(private val elt: GoCallExpr) : DialogWrapper(elt.project) {
+class SwiApiSpecDialog(private val elt: GoCallExpr) : DialogWrapper(elt.project) {
     private val exportOptions = listOf("ApiFox", "OpenAPI", "Swagger")
     private val pathResolver = SwiPathResolver()
     private val payloadResolver = SwiPayloadResolver()
@@ -55,8 +56,19 @@ class SwiApiDocDialog(private val elt: GoCallExpr) : DialogWrapper(elt.project) 
     private fun exportAction(option: String) {
         if ("ApiFox" == option) {
             val requestPayload = payloadResolver.resolve(elt)
-            if (requestPayload.body.isNotEmpty()) {
-
+            val body = requestPayload.body
+            if (body.isNotEmpty()) {
+                val schema = ApiFoxSchema()
+                schema.setType("object")
+                body.forEach {
+                    val properties = ApiFoxSchema()
+                    if (!it.isReference) {
+                        properties.setType(GoTypeMapper.from(it.fieldType).toApiFoxType())
+                        properties.setTitle(it.fieldDesc)
+                        schema.addProperty(it.fieldName, properties)
+                    }
+                }
+                SwiApiSchemaDialog(elt.project, schema).show()
             }
         }
     }

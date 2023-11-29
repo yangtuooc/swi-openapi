@@ -1,6 +1,6 @@
 package cn.haloop.swi.helper.nav
 
-import cn.haloop.swi.helper.dialog.SwiApiDocDialog
+import cn.haloop.swi.helper.dialog.SwiApiSpecDialog
 import com.goide.psi.GoCallExpr
 import com.intellij.codeInsight.daemon.GutterIconNavigationHandler
 import com.intellij.psi.PsiElement
@@ -13,6 +13,6 @@ import java.awt.event.MouseEvent
 class SwiNavigationHandler : GutterIconNavigationHandler<PsiElement> {
     override fun navigate(e: MouseEvent?, elt: PsiElement) {
         val callExpr = PsiTreeUtil.getParentOfType(elt, GoCallExpr::class.java) ?: return
-        SwiApiDocDialog(callExpr).show()
+        SwiApiSpecDialog(callExpr).show()
     }
 }

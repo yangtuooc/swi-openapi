@@ -36,6 +36,14 @@ class ApiFoxSchema {
         this.type = type
     }
 
+    fun setTitle(title: String) {
+        this.title = title
+    }
+
+    fun setRequired(required: Boolean) {
+        this.required = required
+    }
+
     fun getType(): String {
         return type
     }
