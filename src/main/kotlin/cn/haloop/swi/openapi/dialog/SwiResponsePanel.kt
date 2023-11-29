@@ -1,6 +1,6 @@
-package cn.haloop.swi.helper.dialog
+package cn.haloop.swi.openapi.dialog
 
-import cn.haloop.swi.helper.resovler.SwiPayload
+import cn.haloop.swi.openapi.resovler.SwiPayload
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.table.JBTable
 import java.awt.FlowLayout

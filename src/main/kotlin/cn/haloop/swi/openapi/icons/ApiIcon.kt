@@ -1,4 +1,4 @@
-package cn.haloop.swi.helper.icons
+package cn.haloop.swi.openapi.icons
 
 import com.intellij.openapi.util.IconLoader
 

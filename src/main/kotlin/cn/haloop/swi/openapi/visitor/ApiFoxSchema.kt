@@ -1,4 +1,4 @@
-package cn.haloop.swi.helper.visitor
+package cn.haloop.swi.openapi.visitor
 
 import com.fasterxml.jackson.annotation.JsonProperty
 

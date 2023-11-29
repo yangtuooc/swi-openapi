@@ -1,7 +1,7 @@
-package cn.haloop.swi.helper.providers
+package cn.haloop.swi.openapi.providers
 
-import cn.haloop.swi.helper.icons.ApiIcon
-import cn.haloop.swi.helper.nav.SwiNavigationHandler
+import cn.haloop.swi.openapi.icons.ApiIcon
+import cn.haloop.swi.openapi.nav.SwiNavigationHandler
 import com.goide.psi.GoCallExpr
 import com.goide.psi.GoReferenceExpression
 import com.intellij.codeInsight.daemon.LineMarkerInfo

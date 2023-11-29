@@ -1,6 +1,6 @@
-package cn.haloop.swi.helper.nav
+package cn.haloop.swi.openapi.nav
 
-import cn.haloop.swi.helper.dialog.SwiApiSpecDialog
+import cn.haloop.swi.openapi.dialog.SwiApiSpecDialog
 import com.goide.psi.GoCallExpr
 import com.intellij.codeInsight.daemon.GutterIconNavigationHandler
 import com.intellij.psi.PsiElement

@@ -1,4 +1,4 @@
-package cn.haloop.swi.helper.resovler
+package cn.haloop.swi.openapi.resovler
 
 class SwiPayload {
     var query: MutableList<GoTypeSpecMetadata> = mutableListOf()

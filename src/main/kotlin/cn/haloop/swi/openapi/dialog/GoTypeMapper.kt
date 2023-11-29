@@ -1,4 +1,4 @@
-package cn.haloop.swi.helper.dialog
+package cn.haloop.swi.openapi.dialog
 
 /**
  * @author yangtuo

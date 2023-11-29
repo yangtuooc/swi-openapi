@@ -16,7 +16,7 @@
   <extensions defaultExtensionNs="com.intellij">
     <codeInsight.lineMarkerProvider
       language="go"
-      implementationClass="cn.haloop.swi.helper.providers.SwiLineMarkerProvider"/>
+      implementationClass="cn.haloop.swi.openapi.providers.SwiLineMarkerProvider"/>
   </extensions>
   <actions>
   </actions>

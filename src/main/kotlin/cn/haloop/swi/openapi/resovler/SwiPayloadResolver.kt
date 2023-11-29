@@ -1,6 +1,6 @@
-package cn.haloop.swi.helper.resovler
+package cn.haloop.swi.openapi.resovler
 
-import cn.haloop.swi.helper.visitor.SwiGoStructVisitor
+import cn.haloop.swi.openapi.visitor.SwiGoStructVisitor
 import com.goide.psi.*
 import com.intellij.psi.ResolveState
 import com.intellij.psi.util.PsiTreeUtil

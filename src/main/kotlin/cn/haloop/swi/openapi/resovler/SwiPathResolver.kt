@@ -1,4 +1,4 @@
-package cn.haloop.swi.helper.resovler
+package cn.haloop.swi.openapi.resovler
 
 import com.goide.psi.GoArgumentList
 import com.goide.psi.GoCallExpr

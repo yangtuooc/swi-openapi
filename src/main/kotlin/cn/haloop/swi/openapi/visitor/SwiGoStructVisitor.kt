@@ -1,6 +1,6 @@
-package cn.haloop.swi.helper.visitor
+package cn.haloop.swi.openapi.visitor
 
-import cn.haloop.swi.helper.resovler.GoTypeSpecMetadata
+import cn.haloop.swi.openapi.resovler.GoTypeSpecMetadata
 import com.goide.psi.*
 import com.goide.psi.impl.GoTypeUtil
 import com.intellij.psi.PsiComment

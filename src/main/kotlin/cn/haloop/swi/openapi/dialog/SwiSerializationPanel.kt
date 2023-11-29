@@ -1,4 +1,4 @@
-package cn.haloop.swi.helper.dialog
+package cn.haloop.swi.openapi.dialog
 
 import com.intellij.openapi.ui.ComboBox
 import java.awt.FlowLayout

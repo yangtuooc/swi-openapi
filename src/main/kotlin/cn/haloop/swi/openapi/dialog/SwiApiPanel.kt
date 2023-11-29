@@ -1,4 +1,4 @@
-package cn.haloop.swi.helper.dialog
+package cn.haloop.swi.openapi.dialog
 
 import java.awt.FlowLayout
 import javax.swing.JLabel

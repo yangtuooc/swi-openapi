@@ -1,11 +1,11 @@
-package cn.haloop.swi.helper.dialog
+package cn.haloop.swi.openapi.dialog
 
 /**
  * @author yangtuo
  */
-import cn.haloop.swi.helper.resovler.SwiPathResolver
-import cn.haloop.swi.helper.resovler.SwiPayloadResolver
-import cn.haloop.swi.helper.visitor.ApiFoxSchema
+import cn.haloop.swi.openapi.resovler.SwiPathResolver
+import cn.haloop.swi.openapi.resovler.SwiPayloadResolver
+import cn.haloop.swi.openapi.visitor.ApiFoxSchema
 import com.goide.psi.GoCallExpr
 import com.intellij.openapi.ui.DialogWrapper
 import javax.swing.*
