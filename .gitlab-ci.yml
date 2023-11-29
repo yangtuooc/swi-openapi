@@ -1,4 +1,4 @@
-image: gradle:latest
+image: gradle:8.2-jdk17
 
 stages:
   - build
@@ -7,12 +7,12 @@ stages:
 build:
   stage: build
   script:
-    - ./gradlew assemble
+    - ./gradlew assemble --no-daemon
 
 deploy:
   stage: deploy
   script:
-    - ./gradlew publish
+    - ./gradlew publish --no-daemon
   only:
     - main
   when: manual

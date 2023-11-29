@@ -68,7 +68,7 @@ publishing {
     }
     repositories {
         maven {
-            url = uri("https://jihulab.com/api/v4/projects/170168/packages/maven")
+            url = uri("https://jihulab.com/api/v4/projects/170168/packages/ide-plugins")
             credentials(HttpHeaderCredentials::class) {
                 name = "Job-Token"
                 value = System.getenv("CI_JOB_TOKEN")
