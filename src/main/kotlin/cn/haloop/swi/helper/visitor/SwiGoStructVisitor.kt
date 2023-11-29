@@ -12,20 +12,20 @@ import com.intellij.psi.util.PsiTreeUtil
  */
 class SwiGoStructVisitor : GoRecursiveVisitor() {
 
-    private val structMetas = mutableListOf<StructMeta>()
+    private val structMetas = mutableListOf<GoTypeSpecMetadata>()
 
     override fun visitStructType(o: GoStructType) {
         o.fieldDeclarationList.forEach { fieldDeclaration ->
             if (fieldDeclaration.fieldDefinitionList.isNotEmpty()) {
                 // 正常字段
                 fieldDeclaration.fieldDefinitionList.forEach { fieldDef ->
-                    val structMeta = StructMeta()
-                    structMeta.name = fieldDef.name.toString()
+                    val structMeta = GoTypeSpecMetadata()
+                    structMeta.fieldName = fieldDef.name.toString()
                     val fieldType = fieldDeclaration.type
-                    structMeta.type = fieldType?.text ?: "Unknown Type"
-                    structMeta.title =
+                    structMeta.fieldType = fieldType?.text ?: "Unknown Type"
+                    structMeta.fieldTitle =
                         fieldDeclaration.tag?.getValue("desc") ?: fieldDeclaration.tag?.getValue("description") ?: ""
-                    structMeta.desc = findFieldComment(fieldDef)
+                    structMeta.fieldDesc = findFieldComment(fieldDef)
                     structMetas.add(structMeta)
                     if (GoTypeUtil.isSlice(fieldType, fieldType?.context)) {
                         structMeta.isReference = true
@@ -90,24 +90,37 @@ class SwiGoStructVisitor : GoRecursiveVisitor() {
         return structMetas.map { it.toList() }.toMutableList()
     }
 
-    fun structMetas(): MutableList<StructMeta> {
+    fun structMetas(): MutableList<GoTypeSpecMetadata> {
         return structMetas
     }
 }
 
-class StructMeta {
-    var name: String = ""
-    var type: String = ""
-    var title: String = ""
-    var desc: String = ""
+class GoTypeSpecMetadata {
+    var fieldName: String = ""
+    var fieldType: String = ""
+    var fieldTitle: String = ""
+    var fieldDesc: String = ""
     var isReference: Boolean = false
     var isArray: Boolean = false
+    var isRequired: Boolean = false
+    var isEnum: Boolean = false
+    var enumMetadata: EnumMetadata? = null
 
     fun toList(): MutableList<Any> {
         if (isReference) {
-            return mutableListOf("$$name", type, title, desc)
+            return mutableListOf("$$fieldName", fieldType, fieldTitle, fieldDesc)
         }
-        return mutableListOf(name, type, title, desc)
+        return mutableListOf(fieldName, fieldType, fieldTitle, fieldDesc)
+    }
+}
+
+class EnumMetadata {
+    private var enumName: String = ""
+    private var enumDesc: String = ""
+    private var enumValue: String = ""
+
+    fun toList(): MutableList<Any> {
+        return mutableListOf(enumName, enumDesc, enumValue)
     }
 }
 

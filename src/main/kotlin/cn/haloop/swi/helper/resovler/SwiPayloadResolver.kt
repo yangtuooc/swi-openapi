@@ -1,6 +1,6 @@
 package cn.haloop.swi.helper.resovler
 
-import cn.haloop.swi.helper.visitor.StructMeta
+import cn.haloop.swi.helper.visitor.GoTypeSpecMetadata
 import cn.haloop.swi.helper.visitor.SwiGoStructVisitor
 import com.goide.psi.*
 import com.intellij.psi.ResolveState
@@ -63,7 +63,7 @@ class SwiPayloadResolver {
 //        return mutableListOf(mutableListOf(pathExpr.text.trim('"'), "string", "", ""))
 //    }
 
-    private fun resolveQuery(queryExpr: GoExpression): MutableList<StructMeta> {
+    private fun resolveQuery(queryExpr: GoExpression): MutableList<GoTypeSpecMetadata> {
         return when (queryExpr) {
             is GoUnaryExpr -> {
                 val referenceExpression = PsiTreeUtil.findChildOfType(queryExpr, GoReferenceExpression::class.java)
@@ -80,7 +80,7 @@ class SwiPayloadResolver {
         }
     }
 
-    private fun resolveBody(bodyExpr: GoExpression): MutableList<StructMeta> {
+    private fun resolveBody(bodyExpr: GoExpression): MutableList<GoTypeSpecMetadata> {
         val referenceExpression = when (bodyExpr) {
             is GoUnaryExpr -> PsiTreeUtil.findChildOfType(bodyExpr, GoReferenceExpression::class.java)
             is GoReferenceExpression -> bodyExpr
@@ -97,15 +97,15 @@ class SwiPayloadResolver {
 }
 
 class SwiPayload {
-    var query: MutableList<StructMeta> = mutableListOf()
-    var path: MutableList<StructMeta> = mutableListOf()
-    var body: MutableList<StructMeta> = mutableListOf()
+    var query: MutableList<GoTypeSpecMetadata> = mutableListOf()
+    var path: MutableList<GoTypeSpecMetadata> = mutableListOf()
+    var body: MutableList<GoTypeSpecMetadata> = mutableListOf()
 
     companion object {
         fun empty(): SwiPayload = SwiPayload()
     }
 
-    fun appendToBody(element: MutableList<StructMeta>) {
+    fun appendToBody(element: MutableList<GoTypeSpecMetadata>) {
         body.addAll(element)
     }
 }

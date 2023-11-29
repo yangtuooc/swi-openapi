@@ -56,7 +56,7 @@ class SwiApiDocDialog(private val elt: GoCallExpr) : DialogWrapper(elt.project) 
         if ("ApiFox" == option) {
             val requestPayload = payloadResolver.resolve(elt)
             if (requestPayload.body.isNotEmpty()) {
-                
+
             }
         }
     }
