@@ -1,6 +1,6 @@
 package cn.haloop.swi.openapi.dialog
 
-import cn.haloop.swi.openapi.visitor.ApiFoxSchema
+import cn.haloop.swi.openapi.visitor.SwiCompositeApiFoxSchema
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.intellij.json.JsonFileType
@@ -20,8 +20,8 @@ import javax.swing.JPanel
  */
 class SwiApiSchemaDialog(
     private val project: Project,
-    private val requestSchema: ApiFoxSchema?,
-    private val responseSchema: ApiFoxSchema?
+    private val requestSchema: SwiCompositeApiFoxSchema?,
+    private val responseSchema: SwiCompositeApiFoxSchema?
 ) : DialogWrapper(project) {
 
     private val om = JsonMapper.builder()

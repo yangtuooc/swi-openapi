@@ -7,6 +7,8 @@ import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.ResolveState
 import com.intellij.psi.util.PsiTreeUtil
+import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * @author yangtuo
@@ -14,6 +16,8 @@ import com.intellij.psi.util.PsiTreeUtil
 class SwiGoStructVisitor : GoRecursiveVisitor() {
 
     private val structMetas = mutableListOf<GoTypeSpecMetadata>()
+    private val metadataStack = Stack<GoTypeSpecMetadata>()
+    private val depth = AtomicInteger(0)
 
     override fun visitStructType(o: GoStructType) {
         o.fieldDeclarationList.forEach { fieldDeclaration ->
@@ -26,21 +30,37 @@ class SwiGoStructVisitor : GoRecursiveVisitor() {
                         return@forEach
                     }
 
-                    val structMeta = GoTypeSpecMetadata()
+                    val metadata = GoTypeSpecMetadata()
                     if (jsonTag?.isNotBlank() == true) {
                         // 去掉json tag中的omitempty
                         jsonTag = jsonTag.replace(",omitempty", "")
                     }
-                    structMeta.fieldName = jsonTag ?: fieldDef.name.toString()
+                    metadata.fieldName = jsonTag ?: fieldDef.name.toString()
                     val fieldType = fieldDeclaration.type
-                    structMeta.fieldType = fieldType?.text ?: "Unknown Type"
-                    structMeta.fieldTitle =
+                    metadata.fieldType = fieldType?.text ?: "Unknown Type"
+                    metadata.fieldTitle =
                         fieldDeclaration.tag?.getValue("desc") ?: fieldDeclaration.tag?.getValue("description") ?: ""
-                    structMeta.fieldDesc = findFieldComment(fieldDef)
-                    structMetas.add(structMeta)
+                    metadata.fieldDesc = findFieldComment(fieldDef)
+                    structMetas.add(metadata)
+                    if (isPrimitiveType(fieldType)) {
+                        return@forEach
+                    }
                     if (GoTypeUtil.isSlice(fieldType, fieldType?.context)) {
-                        structMeta.isReference = true
+                        metadata.isReference = true
+                        metadata.isArray = true
+                        metadataStack.push(metadata)
                         visitArrayOrSliceType(fieldType as GoArrayOrSliceType)
+                    }
+                    if (GoTypeUtil.isPointer(fieldType, fieldType?.context)) {
+                        metadata.isReference = true
+                        metadataStack.push(metadata)
+                        visitPointerType(fieldType as GoPointerType)
+                    }
+                    val resolved = fieldType?.contextlessResolve()
+                    if (resolved is GoTypeSpec) {
+                        val embeddedVisitor = SwiGoStructVisitor()
+                        resolved.accept(embeddedVisitor)
+                        metadata.references = embeddedVisitor.structMetas
                     }
                 }
             } else {
@@ -53,37 +73,31 @@ class SwiGoStructVisitor : GoRecursiveVisitor() {
         }
     }
 
+    override fun visitPointerType(o: GoPointerType) {
+        val resolved = o.type?.contextlessResolve()
+        if (resolved is GoTypeSpec) {
+            val embeddedVisitor = SwiGoStructVisitor()
+            resolved.accept(embeddedVisitor)
+            metadataStack.pop().references = embeddedVisitor.structMetas
+        }
+    }
+
     override fun visitArrayOrSliceType(o: GoArrayOrSliceType) {
-        when (val goType = o.type) {
+        when (val goType = o.type.contextlessResolve()) {
             is GoPointerType -> {
-                val resolved = goType.type?.resolve(ResolveState())
-                if (resolved is GoTypeSpec) {
-                    val embeddedVisitor = SwiGoStructVisitor()
-                    resolved.accept(embeddedVisitor)
-                    embeddedVisitor.structMetas.forEach {
-                        it.isReference = true
-                        it.isArray = true
-                    }
-                    structMetas.addAll(embeddedVisitor.structMetas)
-                }
+                visitPointerType(goType)
             }
 
             is GoTypeSpec -> {
-                val resolved = goType.resolve(ResolveState())
-                if (resolved is GoStructType) {
-                    val embeddedVisitor = SwiGoStructVisitor()
-                    resolved.accept(embeddedVisitor)
-                    embeddedVisitor.structMetas.forEach {
-                        it.isReference = true
-                        it.isArray = true
-                    }
-                    structMetas.addAll(embeddedVisitor.structMetas)
-                }
+                val embeddedVisitor = SwiGoStructVisitor()
+                goType.accept(embeddedVisitor)
+                metadataStack.pop().references = embeddedVisitor.structMetas
             }
 
             else -> {}
         }
     }
+
 
     private fun findFieldComment(fieldDef: GoFieldDefinition): String {
         var nextSibling: PsiElement? = PsiTreeUtil.nextLeaf(fieldDef)
@@ -97,13 +111,33 @@ class SwiGoStructVisitor : GoRecursiveVisitor() {
         return ""
     }
 
+    private fun isPrimitiveType(type: GoType?): Boolean {
+        type ?: return false
+        return GoTypeUtil.isUintType(type, type.context) ||
+                GoTypeUtil.isUint64(type, type.context) ||
+                GoTypeUtil.isIntType(type, type.context) ||
+                GoTypeUtil.isIntegerType(type, type.context) ||
+                GoTypeUtil.isInt64(type, type.context) ||
+                GoTypeUtil.isFloatType(type, type.context) ||
+                GoTypeUtil.isFloat32(type, type.context) ||
+                GoTypeUtil.isFloat64(type, type.context) ||
+                GoTypeUtil.isComplexType(type, type.context) ||
+                GoTypeUtil.isComplex64(type, type.context) ||
+                GoTypeUtil.isComplex128(type, type.context) ||
+                GoTypeUtil.isString(type, type.context) ||
+                GoTypeUtil.isBoolean(type, type.context) ||
+                GoTypeUtil.isByteType(type, type.context) ||
+                GoTypeUtil.isRuneType(type, type.context)
+    }
+
+
     fun toList(): MutableList<MutableList<Any>> {
         return structMetas.map { it.toList() }.toMutableList()
     }
 
     fun structMetas(): MutableList<GoTypeSpecMetadata> {
         return structMetas
+
     }
 }
-
 

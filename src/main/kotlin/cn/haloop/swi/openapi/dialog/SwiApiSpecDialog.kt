@@ -3,9 +3,10 @@ package cn.haloop.swi.openapi.dialog
 /**
  * @author yangtuo
  */
+import cn.haloop.swi.openapi.resovler.ApiFoxSchemaResolver
 import cn.haloop.swi.openapi.resovler.SwiPathResolver
 import cn.haloop.swi.openapi.resovler.SwiPayloadResolver
-import cn.haloop.swi.openapi.visitor.ApiFoxSchema
+import cn.haloop.swi.openapi.visitor.SwiCompositeApiFoxSchema
 import com.goide.psi.GoCallExpr
 import com.intellij.openapi.ui.DialogWrapper
 import javax.swing.*
@@ -57,32 +58,14 @@ class SwiApiSpecDialog(private val elt: GoCallExpr) : DialogWrapper(elt.project)
         if ("ApiFox" == option) {
             val requestPayload = payloadResolver.resolveRequestPayload()
             val responsePayload = payloadResolver.resolveResponsePayload()
-            var requestSchema: ApiFoxSchema? = null
-            var responseSchema: ApiFoxSchema? = null
+            var requestSchema: SwiCompositeApiFoxSchema? = null
+            var responseSchema: SwiCompositeApiFoxSchema? = null
 
             if (responsePayload.body.isNotEmpty()) {
-                responseSchema = ApiFoxSchema()
-                responseSchema.setType("object")
-                responsePayload.body.forEach {
-                    val properties = ApiFoxSchema()
-                    if (!it.isReference) {
-                        properties.setType(GoTypeMapper.from(it.fieldType).toApiFoxType())
-                        properties.setTitle(it.fieldDesc)
-                        responseSchema.addProperty(it.fieldName, properties)
-                    }
-                }
+                responseSchema = ApiFoxSchemaResolver().resolve(responsePayload)
             }
             if (requestPayload.body.isNotEmpty()) {
-                requestSchema = ApiFoxSchema()
-                requestSchema.setType("object")
-                requestPayload.body.forEach {
-                    val properties = ApiFoxSchema()
-                    if (!it.isReference) {
-                        properties.setType(GoTypeMapper.from(it.fieldType).toApiFoxType())
-                        properties.setTitle(it.fieldDesc)
-                        requestSchema.addProperty(it.fieldName, properties)
-                    }
-                }
+                requestSchema = ApiFoxSchemaResolver().resolve(requestPayload)
             }
             SwiApiSchemaDialog(elt.project, requestSchema, responseSchema).show()
         }

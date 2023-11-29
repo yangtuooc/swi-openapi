@@ -9,11 +9,11 @@ import com.goide.psi.impl.GoTypeUtil
  */
 class SwiApiDocVisitor : GoRecursiveVisitor() {
 
-    private val schema: ApiFoxSchema = ApiFoxSchema()
+    private val schema: SwiCompositeApiFoxSchema = SwiCompositeApiFoxSchema()
     override fun visitStructType(o: GoStructType) {
         schema.setType("object")
         o.fieldDeclarationList.forEach {
-            val property = ApiFoxSchema()
+            val property = SwiCompositeApiFoxSchema()
             val fieldName = it.fieldDefinitionList[0].name!!
             val type = it.type!!
             val context = it.context
@@ -37,7 +37,7 @@ class SwiApiDocVisitor : GoRecursiveVisitor() {
     }
 
 
-    fun apiFoxSchema(): ApiFoxSchema {
+    fun apiFoxSchema(): SwiCompositeApiFoxSchema {
         return schema
     }
 }

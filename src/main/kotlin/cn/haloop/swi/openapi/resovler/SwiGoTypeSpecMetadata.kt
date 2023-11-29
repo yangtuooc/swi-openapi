@@ -5,11 +5,10 @@ class GoTypeSpecMetadata {
     var fieldType: String = ""
     var fieldTitle: String = ""
     var fieldDesc: String = ""
-    var isReference: Boolean = false
     var isArray: Boolean = false
     var isRequired: Boolean = false
-    var isEnum: Boolean = false
-    var enumMetadata: EnumMetadata? = null
+    var isReference: Boolean = false
+    var references: MutableList<GoTypeSpecMetadata> = mutableListOf()
 
     fun toList(): MutableList<Any> {
         if (isReference) {
