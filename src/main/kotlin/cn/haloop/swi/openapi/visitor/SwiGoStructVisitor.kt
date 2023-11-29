@@ -3,10 +3,7 @@ package cn.haloop.swi.openapi.visitor
 import cn.haloop.swi.openapi.resovler.GoTypeSpecMetadata
 import com.goide.psi.*
 import com.goide.psi.impl.GoTypeUtil
-import com.intellij.psi.PsiComment
-import com.intellij.psi.PsiElement
 import com.intellij.psi.ResolveState
-import com.intellij.psi.util.PsiTreeUtil
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -21,115 +18,149 @@ class SwiGoStructVisitor : GoRecursiveVisitor() {
 
     override fun visitStructType(o: GoStructType) {
         o.fieldDeclarationList.forEach { fieldDeclaration ->
-            if (fieldDeclaration.fieldDefinitionList.isNotEmpty()) {
-                // 正常字段
-                fieldDeclaration.fieldDefinitionList.forEach { fieldDef ->
-                    var jsonTag = fieldDeclaration.tag?.getValue("json")
-                    if (jsonTag?.contains("-") == true) {
-                        // 序列化时忽略该字段
-                        return@forEach
-                    }
+            processFieldDeclaration(fieldDeclaration)
+        }
+    }
 
-                    val metadata = GoTypeSpecMetadata()
-                    if (jsonTag?.isNotBlank() == true) {
-                        // 去掉json tag中的omitempty
-                        jsonTag = jsonTag.replace(",omitempty", "")
-                    }
-                    metadata.fieldName = jsonTag ?: fieldDef.name.toString()
-                    val fieldType = fieldDeclaration.type
-                    metadata.fieldType = fieldType?.text ?: "Unknown Type"
-                    metadata.fieldTitle =
-                        fieldDeclaration.tag?.getValue("desc") ?: fieldDeclaration.tag?.getValue("description") ?: ""
-                    metadata.fieldDesc = findFieldComment(fieldDef)
-                    structMetas.add(metadata)
-                    if (isPrimitiveType(fieldType)) {
-                        return@forEach
-                    }
-                    if (GoTypeUtil.isSlice(fieldType, fieldType?.context)) {
-                        metadata.isReference = true
-                        metadata.isArray = true
-                        metadataStack.push(metadata)
-                        visitArrayOrSliceType(fieldType as GoArrayOrSliceType)
-                    }
-                    if (GoTypeUtil.isPointer(fieldType, fieldType?.context)) {
-                        metadata.isReference = true
-                        metadataStack.push(metadata)
-                        visitPointerType(fieldType as GoPointerType)
-                    }
-                    val resolved = fieldType?.contextlessResolve()
-                    if (resolved is GoTypeSpec) {
-                        val embeddedVisitor = SwiGoStructVisitor()
-                        resolved.accept(embeddedVisitor)
-                        metadata.references = embeddedVisitor.structMetas
+    private fun processFieldDeclaration(fieldDeclaration: GoFieldDeclaration) {
+        if (fieldDeclaration.fieldDefinitionList.isNotEmpty()) {
+            fieldDeclaration.fieldDefinitionList.forEach { fieldDef ->
+                processFieldDefinition(fieldDeclaration, fieldDef)
+            }
+        } else {
+            // 处理嵌入的结构体
+            processEmbeddedStruct(fieldDeclaration)
+        }
+    }
+
+    private fun processFieldDefinition(fieldDeclaration: GoFieldDeclaration, fieldDef: GoFieldDefinition) {
+        var jsonTag = fieldDeclaration.tag?.getValue("json")
+        if (jsonTag?.contains("-") == true) return // 序列化时忽略该字段
+
+        val metadata = createMetadata(fieldDeclaration, fieldDef, jsonTag)
+        structMetas.add(metadata)
+
+        val fieldType = fieldDeclaration.type
+        if (!isPrimitiveType(fieldType)) {
+            processComplexType(fieldType, metadata)
+        }
+    }
+
+    private fun processComplexType(fieldType: GoType?, metadata: GoTypeSpecMetadata) {
+        when {
+            GoTypeUtil.isSlice(fieldType, fieldType?.context) -> {
+                metadata.isReference = true
+                metadata.isArray = true
+                metadataStack.push(metadata)
+                visitArrayOrSliceType(fieldType as GoArrayOrSliceType)
+            }
+
+            GoTypeUtil.isPointer(fieldType, fieldType?.context) -> {
+                metadata.isReference = true
+                metadataStack.push(metadata)
+                visitPointerType(fieldType as GoPointerType)
+            }
+
+            else -> {
+                fieldType?.contextlessResolve()?.let {
+                    if (it is GoTypeSpec) {
+                        visitResolvedTypeSpec(it, metadata)
                     }
                 }
-            } else {
-                // 处理嵌入的结构体
-                val embeddedStructType = fieldDeclaration.type ?: fieldDeclaration.anonymousFieldDefinition?.type
-                val embeddedVisitor = SwiGoStructVisitor()
-                embeddedStructType?.resolve(ResolveState.initial())?.accept(embeddedVisitor)
-                structMetas.addAll(embeddedVisitor.structMetas)
             }
+        }
+    }
+
+    private fun visitResolvedTypeSpec(typeSpec: GoTypeSpec, metadata: GoTypeSpecMetadata) {
+        val embeddedVisitor = SwiGoStructVisitor()
+        typeSpec.accept(embeddedVisitor)
+        metadata.references = embeddedVisitor.structMetas
+    }
+
+    private fun createMetadata(
+        fieldDeclaration: GoFieldDeclaration,
+        fieldDef: GoFieldDefinition,
+        jsonTag: String?
+    ): GoTypeSpecMetadata {
+        val metadata = GoTypeSpecMetadata()
+        jsonTag?.let {
+            metadata.fieldName = it.replace(",omitempty", "")
+        } ?: run {
+            metadata.fieldName = fieldDef.name.toString()
+        }
+        metadata.fieldType = fieldDeclaration.type?.text ?: "Unknown Type"
+        metadata.fieldTitle =
+            fieldDeclaration.tag?.getValue("desc") ?: fieldDeclaration.tag?.getValue("description") ?: ""
+        metadata.fieldDesc = findFieldComment(fieldDef)
+        return metadata
+    }
+
+    private fun processEmbeddedStruct(fieldDeclaration: GoFieldDeclaration) {
+        val embeddedStructType = fieldDeclaration.type ?: fieldDeclaration.anonymousFieldDefinition?.type
+        embeddedStructType?.resolve(ResolveState.initial())?.let {
+            val embeddedVisitor = SwiGoStructVisitor()
+            it.accept(embeddedVisitor)
+            structMetas.addAll(embeddedVisitor.structMetas)
         }
     }
 
     override fun visitPointerType(o: GoPointerType) {
-        val resolved = o.type?.contextlessResolve()
-        if (resolved is GoTypeSpec) {
-            val embeddedVisitor = SwiGoStructVisitor()
-            resolved.accept(embeddedVisitor)
-            metadataStack.pop().references = embeddedVisitor.structMetas
+        o.type?.contextlessResolve()?.let {
+            if (it is GoTypeSpec) {
+                visitResolvedTypeSpec(it, metadataStack.pop())
+            }
         }
     }
 
     override fun visitArrayOrSliceType(o: GoArrayOrSliceType) {
-        when (val goType = o.type.contextlessResolve()) {
-            is GoPointerType -> {
-                visitPointerType(goType)
+        o.type.contextlessResolve()?.let {
+            when (it) {
+                is GoPointerType -> visitPointerType(it)
+                is GoTypeSpec -> visitResolvedTypeSpec(it, metadataStack.pop())
             }
-
-            is GoTypeSpec -> {
-                val embeddedVisitor = SwiGoStructVisitor()
-                goType.accept(embeddedVisitor)
-                metadataStack.pop().references = embeddedVisitor.structMetas
-            }
-
-            else -> {}
         }
     }
 
-
     private fun findFieldComment(fieldDef: GoFieldDefinition): String {
-        var nextSibling: PsiElement? = PsiTreeUtil.nextLeaf(fieldDef)
-        while (nextSibling != null) {
-            if (nextSibling is PsiComment) {
-                return nextSibling.text.trimStart('/').trim() // 提取注释文本
-            }
-            nextSibling = PsiTreeUtil.nextLeaf(nextSibling)
+        val startOffset = fieldDef.textRange.startOffset
+        val endOffset = fieldDef.textRange.endOffset
+
+        // 获取包含字段定义的行的文本
+        val fileText = fieldDef.containingFile.text
+        val lineStart = fileText.lastIndexOf('\n', startOffset).coerceAtLeast(0)
+        val lineEnd = fileText.indexOf('\n', endOffset).coerceAtMost(fileText.length)
+        val lineText = fileText.substring(lineStart, lineEnd)
+
+        // 查找注释标记并提取注释
+        val commentStart = lineText.indexOf("//")
+        if (commentStart != -1) {
+            // 提取注释文本
+            return lineText.substring(commentStart + 2).trim()
         }
 
         return ""
     }
 
-    private fun isPrimitiveType(type: GoType?): Boolean {
-        type ?: return false
-        return GoTypeUtil.isUintType(type, type.context) ||
-                GoTypeUtil.isUint64(type, type.context) ||
-                GoTypeUtil.isIntType(type, type.context) ||
-                GoTypeUtil.isIntegerType(type, type.context) ||
-                GoTypeUtil.isInt64(type, type.context) ||
-                GoTypeUtil.isFloatType(type, type.context) ||
-                GoTypeUtil.isFloat32(type, type.context) ||
-                GoTypeUtil.isFloat64(type, type.context) ||
-                GoTypeUtil.isComplexType(type, type.context) ||
-                GoTypeUtil.isComplex64(type, type.context) ||
-                GoTypeUtil.isComplex128(type, type.context) ||
-                GoTypeUtil.isString(type, type.context) ||
-                GoTypeUtil.isBoolean(type, type.context) ||
-                GoTypeUtil.isByteType(type, type.context) ||
-                GoTypeUtil.isRuneType(type, type.context)
-    }
 
+    private fun isPrimitiveType(type: GoType?): Boolean {
+        return type?.let {
+            GoTypeUtil.isUintType(type, type.context) ||
+                    GoTypeUtil.isUint64(type, type.context) ||
+                    GoTypeUtil.isIntType(type, type.context) ||
+                    GoTypeUtil.isIntegerType(type, type.context) ||
+                    GoTypeUtil.isInt64(type, type.context) ||
+                    GoTypeUtil.isFloatType(type, type.context) ||
+                    GoTypeUtil.isFloat32(type, type.context) ||
+                    GoTypeUtil.isFloat64(type, type.context) ||
+                    GoTypeUtil.isComplexType(type, type.context) ||
+                    GoTypeUtil.isComplex64(type, type.context) ||
+                    GoTypeUtil.isComplex128(type, type.context) ||
+                    GoTypeUtil.isString(type, type.context) ||
+                    GoTypeUtil.isBoolean(type, type.context) ||
+                    GoTypeUtil.isByteType(type, type.context) ||
+                    GoTypeUtil.isRuneType(type, type.context)
+        } ?: false
+    }
 
     fun toList(): MutableList<MutableList<Any>> {
         return structMetas.map { it.toList() }.toMutableList()
@@ -137,7 +168,5 @@ class SwiGoStructVisitor : GoRecursiveVisitor() {
 
     fun structMetas(): MutableList<GoTypeSpecMetadata> {
         return structMetas
-
     }
 }
-
