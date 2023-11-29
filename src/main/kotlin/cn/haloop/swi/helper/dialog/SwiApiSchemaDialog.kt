@@ -3,19 +3,20 @@ package cn.haloop.swi.helper.dialog
 import cn.haloop.swi.helper.visitor.ApiFoxSchema
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.json.JsonMapper
+import com.intellij.json.JsonFileType
+import com.intellij.openapi.editor.Document
+import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
-import com.intellij.ui.components.JBScrollPane
+import com.intellij.ui.EditorTextField
 import java.awt.BorderLayout
-import java.awt.Dimension
 import javax.swing.JComponent
 import javax.swing.JPanel
-import javax.swing.JTextArea
 
 /**
  * @author yangtuo
  */
-class SwiApiSchemaDialog(project: Project, private val schema: ApiFoxSchema) : DialogWrapper(project) {
+class SwiApiSchemaDialog(private val project: Project, private val schema: ApiFoxSchema) : DialogWrapper(project) {
 
     private val om = JsonMapper.builder()
         .build()
@@ -29,16 +30,18 @@ class SwiApiSchemaDialog(project: Project, private val schema: ApiFoxSchema) : D
 
     override fun createCenterPanel(): JComponent {
         val jsonStr = om.writerWithDefaultPrettyPrinter().writeValueAsString(schema)
-        val textArea = JTextArea(jsonStr)
-        textArea.isEditable = false
-        textArea.lineWrap = true
-        textArea.wrapStyleWord = true
-
-        val scrollPane = JBScrollPane(textArea)
-        scrollPane.preferredSize = Dimension(700, 400)
+        val document: Document = EditorFactory.getInstance().createDocument(jsonStr)
+        val editorTextField = EditorTextField(document, project, JsonFileType.INSTANCE, false, false).apply {
+            setOneLineMode(false) // Disable one-line mode
+            addSettingsProvider { editor ->
+                editor.setHorizontalScrollbarVisible(true)
+                editor.setVerticalScrollbarVisible(true)
+                editor.setCaretVisible(false)
+            }
+        }
 
         val panel = JPanel(BorderLayout())
-        panel.add(scrollPane, BorderLayout.CENTER)
+        panel.add(editorTextField, BorderLayout.CENTER)
         return panel
     }
 }
