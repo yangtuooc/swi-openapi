@@ -49,7 +49,10 @@ class SwiGoStructVisitor : GoRecursiveVisitor() {
                 if (resolved is GoTypeSpec) {
                     val embeddedVisitor = SwiGoStructVisitor()
                     resolved.accept(embeddedVisitor)
-                    embeddedVisitor.structMetas.forEach { it.isReference = true }
+                    embeddedVisitor.structMetas.forEach {
+                        it.isReference = true
+                        it.isArray = true
+                    }
                     structMetas.addAll(embeddedVisitor.structMetas)
                 }
             }
@@ -59,7 +62,10 @@ class SwiGoStructVisitor : GoRecursiveVisitor() {
                 if (resolved is GoStructType) {
                     val embeddedVisitor = SwiGoStructVisitor()
                     resolved.accept(embeddedVisitor)
-                    embeddedVisitor.structMetas.forEach { it.isReference = true }
+                    embeddedVisitor.structMetas.forEach {
+                        it.isReference = true
+                        it.isArray = true
+                    }
                     structMetas.addAll(embeddedVisitor.structMetas)
                 }
             }
@@ -91,6 +97,7 @@ class StructMeta {
     var title: String = ""
     var desc: String = ""
     var isReference: Boolean = false
+    var isArray: Boolean = false
 
     fun toList(): MutableList<Any> {
         if (isReference) {
@@ -99,3 +106,4 @@ class StructMeta {
         return mutableListOf(name, type, title, desc)
     }
 }
+
