@@ -1,4 +1,4 @@
-name: Changelog-dry-run
+name: Changelog
 on:
   release:
     types:
