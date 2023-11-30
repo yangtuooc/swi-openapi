@@ -31,4 +31,4 @@ jobs:
           tag_format: "v${version}"
           extra_plugins: |
             @semantic-release/changelog@6.0.0
-            @semantic-release/git
+            @semantic-release/git@10.0.1
