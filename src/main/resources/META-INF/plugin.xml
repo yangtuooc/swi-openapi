@@ -48,7 +48,7 @@
     Swi OpenAPI is perfect for Go developers seeking to enhance their API documentation process, ensuring accuracy, ease
     of use, and integration with their existing Go projects.
   </description>
-  <version>1.2.0</version>
+  <version>1.2.1</version>
 
   <depends>com.intellij.modules.platform</depends>
   <depends>org.jetbrains.plugins.go</depends>
