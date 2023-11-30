@@ -24,6 +24,29 @@
 
     Swi OpenAPI 是为了解决 Go 项目中 API 文档生成的痛点而设计的。它不仅提升了文档编写的效率，而且保证了文档与代码的同步，为您的
     Go 项目带来更流畅、更高效的开发体验。
+
+    ---
+    Swi OpenAPI - Seamless API Documentation for Go Projects
+
+    Swi OpenAPI is an IntelliJ plugin specifically designed for Go developers using the Gin Web framework. It
+    streamlines the process of creating and maintaining API documentation by automatically generating Apifox JSON Schema
+    documentation directly from your Go code. This plugin eliminates the need for Swagger or other API frameworks,
+    offering a lightweight and integrated solution for API documentation.
+
+    Key Features:
+
+    Automatic Documentation: Effortlessly generate comprehensive Apifox JSON Schema API documentation from your Go
+    source code.
+    Gin Framework Integration: Specially tailored for projects using the Gin Web framework, ensuring accurate
+    documentation that aligns with your code structure.
+    Easy Documentation Management: Manage and view your API documentation within the IntelliJ environment, staying
+    within your development workflow.
+    Real-time Updates: Documentation updates automatically with code changes, keeping documentation consistent with the
+    latest codebase.
+    User-friendly: Simple installation with no additional dependencies, designed for a smooth and efficient development
+    experience.
+    Swi OpenAPI is perfect for Go developers seeking to enhance their API documentation process, ensuring accuracy, ease
+    of use, and integration with their existing Go projects.
   </description>
   <version>1.2.0</version>
 
