@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "cn.haloop"
-version = "1.2.3"
+version = "1.2.4"
 
 repositories {
     mavenCentral()
@@ -41,7 +41,7 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("222")
+        sinceBuild.set("231.*")
         untilBuild.set("233.*")
     }
 
