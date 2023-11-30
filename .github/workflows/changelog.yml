@@ -1,8 +1,11 @@
-name: Changelog
+name: Changelog-dry-run
 on:
-  release:
-    types:
-      - created
+  push:
+    branches:
+      - main
+#  release:
+#    types:
+#      - created
 jobs:
   changelog:
     runs-on: ubuntu-latest
