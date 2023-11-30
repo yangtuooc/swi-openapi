@@ -3,9 +3,25 @@
   <name>Swi OpenAPI</name>
   <vendor email="mawh@bxlsj.com" url="https://www.haloop.cn">StarWish Tech</vendor>
   <description>
-    Go ApiFox插件支持
-    支持框架：Gin
-    无需ApiFox注释生成文档，通过Json Schema的方式导入ApiFox
+    标题： Swi OpenAPI - 无缝集成的API文档生成工具
+
+    描述：
+
+    Swi OpenAPI 是一个为 Go 语言开发者设计的 IntelliJ 插件，旨在解决在 Go 项目中创建和维护 API 文档的挑战。这个插件特别适用于使用 Gin Web 框架的 Go 项目，提供了一种无需依赖 Swagger 或其他 API 框架的方法来自动生成 API 文档。
+
+    主要特点：
+
+    自动生成 API 文档：通过分析您的 Go 代码，这个插件能够自动生成 ApiFox JSON Schema 格式的 API 文档，极大地简化了文档的创建和更新过程。
+
+    对Gin框架的深度支持：本插件专为Gin Web框架量身定做，能够无缝集成并识别Gin的路由和控制器结构，确保文档的准确性和完整性。
+
+    便捷的文档管理：在 IntelliJ 环境中直接管理和浏览 API 文档，无需离开开发环境即可查看和更新文档。
+
+    易于维护和更新：随着代码的变更，API 文档会自动更新，确保文档始终与最新的代码保持一致。
+
+    轻量级且易于使用：不需要额外的依赖或复杂的配置，一键安装即可使用，为 Go 语言开发者带来极大的便利。
+
+    Swi OpenAPI 是为了解决 Go 项目中 API 文档生成的痛点而设计的。它不仅提升了文档编写的效率，而且保证了文档与代码的同步，为您的 Go 项目带来更流畅、更高效的开发体验。
   </description>
   <version>1.2.0</version>
 
