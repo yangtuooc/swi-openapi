@@ -8,7 +8,7 @@ jobs:
     name: Semantic-Release
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout dry branch
+      - name: Checkout Repo
         uses: actions/checkout@v4
       - name: Semantic Release
         uses: cycjimmy/semantic-release-action@v4
