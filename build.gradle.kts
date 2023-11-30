@@ -58,26 +58,3 @@ tasks {
 }
 
 
-
-publishing {
-    publications {
-        create<MavenPublication>("mavenJava") {
-            from(components["java"])
-            // 根据需要设置 groupId, artifactId, version
-        }
-    }
-    repositories {
-        maven {
-            url = uri("https://jihulab.com/api/v4/projects/170168/packages/ide-plugins")
-            credentials(HttpHeaderCredentials::class) {
-                name = "Job-Token"
-                value = System.getenv("CI_JOB_TOKEN")
-            }
-            authentication {
-                create<HttpHeaderAuthentication>("header")
-            }
-        }
-    }
-}
-
-
