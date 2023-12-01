@@ -97,7 +97,7 @@ class SwiGoStructVisitor : GoRecursiveVisitor() {
         } ?: run {
             metadata.fieldName = fieldDef.name.toString()
         }
-        metadata.fieldType = fieldDeclaration.type?.text ?: "Unknown Type"
+        metadata.fieldType = fieldDeclaration.type?.contextlessUnderlyingType?.text ?: "Unknown Type"
         metadata.fieldTitle =
             fieldDeclaration.tag?.getValue("desc") ?: fieldDeclaration.tag?.getValue("description") ?: ""
         metadata.fieldDesc = findFieldComment(fieldDef)
