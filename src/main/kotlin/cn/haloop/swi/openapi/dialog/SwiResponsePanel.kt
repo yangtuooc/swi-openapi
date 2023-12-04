@@ -11,7 +11,7 @@ import javax.swing.table.DefaultTableModel
 /**
  * @author yangtuo
  */
-class SwiResponsePanel(private val payload: SwiPayload) : JPanel() {
+class SwiResponsePanel(payload: SwiPayload) : JPanel() {
 
     private val tableModel = object : DefaultTableModel() {
         override fun isCellEditable(row: Int, column: Int): Boolean {

@@ -69,9 +69,6 @@ class SwiPayloadResolver(private val expr: GoCallExpr) {
         return swiPayload
     }
 
-//    private fun resolvePath(pathExpr: GoExpression): MutableList<StructMeta> {
-//        return mutableListOf(mutableListOf(pathExpr.text.trim('"'), "string", "", ""))
-//    }
 
     private fun resolveCallExprs(): Collection<GoCallExpr> {
         val controllerMethod =
