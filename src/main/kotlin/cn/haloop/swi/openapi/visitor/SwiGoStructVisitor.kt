@@ -34,7 +34,7 @@ class SwiGoStructVisitor : GoRecursiveVisitor() {
     }
 
     private fun processFieldDefinition(fieldDeclaration: GoFieldDeclaration, fieldDef: GoFieldDefinition) {
-        var jsonTag = fieldDeclaration.tag?.getValue("json")
+        val jsonTag = fieldDeclaration.tag?.getValue("json")
         if (jsonTag?.contains("-") == true) return // 序列化时忽略该字段
 
         val metadata = createMetadata(fieldDeclaration, fieldDef, jsonTag)
@@ -82,7 +82,6 @@ class SwiGoStructVisitor : GoRecursiveVisitor() {
         }
         val embeddedVisitor = SwiGoStructVisitor()
         typeSpec.accept(embeddedVisitor)
-        embeddedVisitor.goTypeSpecMetadata.forEach { it.isReference = true }
         metadata.references = embeddedVisitor.goTypeSpecMetadata
     }
 
